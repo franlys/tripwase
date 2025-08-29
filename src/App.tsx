@@ -1,5 +1,5 @@
 import React from 'react';
-import TestErrorBoundary from './components/TestErrorBoundary';
+import TestPerformanceMonitor from './components/TestPerformanceMonitor';
 import './App.css';
 
 function App() {
@@ -7,9 +7,9 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>TripWase - Desarrollo</h1>
-        <p>Probando useErrorBoundary Hook</p>
+        <p>Probando usePerformanceMonitor Hook</p>
       </header>
-      <TestErrorBoundary />
+      <TestPerformanceMonitor />
     </div>
   );
 }
