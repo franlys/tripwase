@@ -1,5 +1,5 @@
 import React from 'react';
-import TestAsync from './components/TestAsync';
+import TestErrorBoundary from './components/TestErrorBoundary';
 import './App.css';
 
 function App() {
@@ -7,9 +7,9 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>TripWase - Desarrollo</h1>
-        <p>Probando useAsync Hook</p>
+        <p>Probando useErrorBoundary Hook</p>
       </header>
-      <TestAsync />
+      <TestErrorBoundary />
     </div>
   );
 }
