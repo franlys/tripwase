@@ -1,15 +1,15 @@
 import React from 'react';
-import TestDebounce from './components/TestDebounce';
+import TestAsync from './components/TestAsync';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>🧳 TripWase - Desarrollo</h1>
-        <p>Probando useDebounce Hook</p>
+        <h1>TripWase - Desarrollo</h1>
+        <p>Probando useAsync Hook</p>
       </header>
-      <TestDebounce />
+      <TestAsync />
     </div>
   );
 }
