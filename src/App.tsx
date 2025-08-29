@@ -1,15 +1,15 @@
 import React from 'react';
-import TestLocalStorage from './components/TestLocalStorage';
+import TestDebounce from './components/TestDebounce';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>🧳 TripWase - Desarrollo - Franlys</h1>
-        <p>Probando useLocalStorage Hook</p>
+        <h1>🧳 TripWase - Desarrollo</h1>
+        <p>Probando useDebounce Hook</p>
       </header>
-      <TestLocalStorage />
+      <TestDebounce />
     </div>
   );
 }
