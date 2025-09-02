@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useTrip } from '../contexts/TripContext';
+import { useTrip } from '../hooks/useTrip';
 
 const Dashboard: React.FC = () => {
   const [activeSection, setActiveSection] = useState<'overview' | 'search' | 'trips'>('overview');

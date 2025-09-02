@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTrip } from '../contexts/TripContext';
+import { useTrip } from '../hooks/useTrip';
 
 const TestTripContext: React.FC = () => {
   const [customBudget, setCustomBudget] = useState<number>(1000);

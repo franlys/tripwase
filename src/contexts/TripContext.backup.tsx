@@ -1,5 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useLocalStorage from '../hooks/useLocalStorage';
+import useAsync from '../hooks/useAsync';
 import useDebounce from '../hooks/useDebounce';
 
 export interface Destination {
@@ -25,7 +27,6 @@ export interface Trip {
   travelers: { adults: number; children: number; };
   budget: { total: number; spent: number; currency: string; };
   status: 'planning' | 'confirmed' | 'completed' | 'cancelled';
-  activities: any[];
   createdAt: string;
   updatedAt: string;
 }
@@ -105,30 +106,73 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Destination[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [currentTrip, setCurrentTrip] = useState<Trip | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>(initialSearchFilters);
   
   const [trips, setTrips] = useLocalStorage<Trip[]>('tripwase_trips', []);
   const [favorites, setFavorites] = useLocalStorage<Destination[]>('tripwase_favorites', []);
   const [searchHistory, setSearchHistory] = useLocalStorage<string[]>('tripwase_search_history', []);
-  const [currentTrip, setCurrentTrip] = useLocalStorage<Trip | null>('tripwase_current_trip', null);
   
   const debouncedQuery = useDebounce(searchQuery, 300);
 
-  const performSearch = useCallback(async (query: string): Promise<Destination[]> => {
-    if (!query || query.trim().length === 0) return [];
-    
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    return MOCK_DESTINATIONS.filter(d => 
-      d.name.toLowerCase().includes(query.toLowerCase()) ||
-      d.country.toLowerCase().includes(query.toLowerCase()) ||
-      d.description.toLowerCase().includes(query.toLowerCase())
-    );
+  const performSearch = useMemo(() => {
+    return async (query: string): Promise<Destination[]> => {
+      if (!query || query.trim().length === 0) return [];
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      return MOCK_DESTINATIONS.filter(d => 
+        d.name.toLowerCase().includes(query.toLowerCase()) ||
+        d.country.toLowerCase().includes(query.toLowerCase()) ||
+        d.description.toLowerCase().includes(query.toLowerCase())
+      );
+    };
   }, []);
 
-  // COMENTADO TEMPORALMENTE - LOOP INFINITO
-  // 
+  useEffect(() => {
+    let isCancelled = false;
+
+    const executeSearch = async () => {
+      if (debouncedQuery && debouncedQuery.trim().length > 0) {
+        setIsSearching(true);
+        setError(null);
+        
+        try {
+          const results = await performSearch(debouncedQuery);
+          
+          if (!isCancelled) {
+            setSearchResults(results);
+            
+            setSearchHistory(prev => {
+              if (prev[0] === debouncedQuery) return prev;
+              const filtered = prev.filter(h => h !== debouncedQuery);
+              return [debouncedQuery, ...filtered].slice(0, 10);
+            });
+          }
+        } catch (err) {
+          if (!isCancelled) {
+            console.error('Error en búsqueda:', err);
+            setError('Error al buscar destinos');
+            setSearchResults([]);
+          }
+        } finally {
+          if (!isCancelled) {
+            setIsSearching(false);
+          }
+        }
+      } else {
+        setSearchResults([]);
+        setIsSearching(false);
+      }
+    };
+
+    executeSearch();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [debouncedQuery, performSearch, setSearchHistory]);
 
   const updateSearchFilters = useCallback((newFilters: Partial<SearchFilters>) => {
     setSearchFilters(prev => ({
@@ -156,38 +200,26 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         currency: searchFilters.budget.currency 
       },
       status: 'planning',
-      activities: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-
     setCurrentTrip(newTrip);
-    setTrips(prev => {
-      const filtered = prev.filter(t => t.id !== newTrip.id);
-      return [...filtered, newTrip];
-    });
-  }, [searchFilters, setCurrentTrip, setTrips]);
+  }, [searchFilters]);
 
   const updateTripDetails = useCallback((updates: Partial<Trip>) => {
-    if (!currentTrip) return;
-    
-    const updatedTrip = { 
-      ...currentTrip, 
-      ...updates, 
-      updatedAt: new Date().toISOString() 
-    };
-    
-    setCurrentTrip(updatedTrip);
-    setTrips(prev => 
-      prev.map(trip => 
-        trip.id === updatedTrip.id ? updatedTrip : trip
-      )
-    );
-  }, [currentTrip, setCurrentTrip, setTrips]);
+    setCurrentTrip(prev => {
+      if (!prev) return null;
+      return { 
+        ...prev, 
+        ...updates, 
+        updatedAt: new Date().toISOString() 
+      };
+    });
+  }, []);
 
   const editTrip = useCallback((trip: Trip) => {
     setCurrentTrip(trip);
-  }, [setCurrentTrip]);
+  }, []);
 
   const saveTrip = useCallback(() => {
     if (!currentTrip) return;
@@ -196,6 +228,7 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       const filtered = prev.filter(t => t.id !== currentTrip.id);
       return [...filtered, currentTrip];
     });
+    setCurrentTrip(null);
   }, [currentTrip, setTrips]);
 
   const deleteTrip = useCallback((tripId: string) => {
@@ -203,7 +236,7 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     if (currentTrip?.id === tripId) {
       setCurrentTrip(null);
     }
-  }, [setTrips, currentTrip, setCurrentTrip]);
+  }, [setTrips, currentTrip]);
 
   const addToFavorites = useCallback((destination: Destination) => {
     setFavorites(prev => {

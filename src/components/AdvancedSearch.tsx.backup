@@ -53,7 +53,9 @@ const AdvancedSearch: React.FC = () => {
     startTripPlanning
   } = useTrip();
 
-
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, query: searchQuery }));
+  }, [searchQuery]);
 
   const handleSearch = (query: string) => {
     setFilters(prev => ({ ...prev, query }));

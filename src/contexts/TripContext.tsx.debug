@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
+Ôªøimport React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
 import useDebounce from '../hooks/useDebounce';
 
@@ -68,34 +68,34 @@ const initialSearchFilters: SearchFilters = {
 
 const MOCK_DESTINATIONS: Destination[] = [
   {
-    id: 'madrid', name: 'Madrid', country: 'EspaÒa',
+    id: 'madrid', name: 'Madrid', country: 'Espa√±a',
     description: 'Capital vibrante con rica historia.',
     averagePrice: 85, currency: 'EUR', popularityScore: 9.2,
     weatherInfo: { averageTemp: 18, bestMonths: ['Mayo', 'Junio'], climate: 'Continental' }
   },
   {
-    id: 'barcelona', name: 'Barcelona', country: 'EspaÒa',
-    description: 'Ciudad cosmopolita con arquitectura ˙nica.',
+    id: 'barcelona', name: 'Barcelona', country: 'Espa√±a',
+    description: 'Ciudad cosmopolita con arquitectura √∫nica.',
     averagePrice: 92, currency: 'EUR', popularityScore: 9.5,
-    weatherInfo: { averageTemp: 20, bestMonths: ['Abril', 'Mayo'], climate: 'Mediterr·neo' }
+    weatherInfo: { averageTemp: 20, bestMonths: ['Abril', 'Mayo'], climate: 'Mediterr√°neo' }
   },
   {
-    id: 'paris', name: 'ParÌs', country: 'Francia',
-    description: 'Ciudad del amor con monumentos icÛnicos.',
+    id: 'paris', name: 'Par√≠s', country: 'Francia',
+    description: 'Ciudad del amor con monumentos ic√≥nicos.',
     averagePrice: 125, currency: 'EUR', popularityScore: 9.8,
-    weatherInfo: { averageTemp: 16, bestMonths: ['Mayo', 'Junio'], climate: 'Oce·nico' }
+    weatherInfo: { averageTemp: 16, bestMonths: ['Mayo', 'Junio'], climate: 'Oce√°nico' }
   },
   {
     id: 'rome', name: 'Roma', country: 'Italia',
     description: 'Ciudad eterna con historia milenaria.',
     averagePrice: 95, currency: 'EUR', popularityScore: 9.4,
-    weatherInfo: { averageTemp: 19, bestMonths: ['Abril', 'Mayo'], climate: 'Mediterr·neo' }
+    weatherInfo: { averageTemp: 19, bestMonths: ['Abril', 'Mayo'], climate: 'Mediterr√°neo' }
   },
   {
     id: 'london', name: 'Londres', country: 'Reino Unido',
-    description: 'MetrÛpoli multicultural con tradiciÛn.',
+    description: 'Metr√≥poli multicultural con tradici√≥n.',
     averagePrice: 140, currency: 'EUR', popularityScore: 9.1,
-    weatherInfo: { averageTemp: 12, bestMonths: ['Junio', 'Julio'], climate: 'Oce·nico' }
+    weatherInfo: { averageTemp: 12, bestMonths: ['Junio', 'Julio'], climate: 'Oce√°nico' }
   }
 ];
 
@@ -127,8 +127,50 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     );
   }, []);
 
-  // COMENTADO TEMPORALMENTE - LOOP INFINITO
-  // 
+  useEffect(() => {
+    let isCancelled = false;
+
+    const executeSearch = async () => {
+      if (debouncedQuery && debouncedQuery.trim().length > 0) {
+        setIsSearching(true);
+        setError(null);
+        
+        try {
+          const results = await performSearch(debouncedQuery);
+          
+          if (!isCancelled) {
+            setSearchResults(results);
+            
+            setSearchHistory(prev => {
+              const trimmedQuery = debouncedQuery.trim();
+              if (prev[0] === trimmedQuery) return prev;
+              const filtered = prev.filter(h => h !== trimmedQuery);
+              return [trimmedQuery, ...filtered].slice(0, 10);
+            });
+          }
+        } catch (err) {
+          if (!isCancelled) {
+            const errorMessage = 'Error al buscar destinos';
+            setError(errorMessage);
+            setSearchResults([]);
+          }
+        } finally {
+          if (!isCancelled) {
+            setIsSearching(false);
+          }
+        }
+      } else {
+        setSearchResults([]);
+        setIsSearching(false);
+      }
+    };
+
+    executeSearch();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [debouncedQuery, performSearch, setSearchHistory]);
 
   const updateSearchFilters = useCallback((newFilters: Partial<SearchFilters>) => {
     setSearchFilters(prev => ({
