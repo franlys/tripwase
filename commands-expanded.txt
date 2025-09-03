@@ -1,0 +1,88 @@
+?? TRIPWASE TEMPLATES CLI - COMANDOS EXPANDIDOS (7 DESTINOS)
+
+?? DESTINOS DISPONIBLES:
+???? madrid, barcelona (España)
+???? paris (Francia)  
+???? rome (Italia)
+???? london (Reino Unido)  
+???? amsterdam (Países Bajos)
+???? lisbon (Portugal)
+
+?? GESTIÓN DE DESTINOS:
+node scripts/activity-manager.js list-destinations
+node scripts/activity-manager.js destination-info <destino>
+node scripts/trip-planner.js list-destinations
+
+?? TEMPLATES EXPANDIDOS:
+- madrid_cultural_classic (Arte y cultura de Madrid)
+- madrid_foodie (Gastronomía y flamenco madrileño)  
+- barcelona_gaudi_route (Ruta arquitectónica de Gaudí)
+- barcelona_beach_city (Playa y ciudad combinados)
+- paris_essential (Lo esencial de París)
+- paris_romantic (París romántico para parejas)
+- rome_ancient (Roma antigua e imperial)
+- rome_foodie (Gastronomía italiana auténtica)
+- london_royal (Londres real y tradiciones)
+- london_cultural (Museos y cultura alternativa)
+- amsterdam_classic (Canales, arte e historia)
+- amsterdam_active (Ámsterdam en bicicleta)
+- lisbon_classic (Tranvías y tradiciones)
+- lisbon_authentic (Fado y barrios auténticos)
+
+?? COMANDOS PRINCIPALES:
+node scripts/activity-manager.js list-templates [destino]
+node scripts/activity-manager.js list-activities [destino] [categoria]
+node scripts/activity-manager.js apply-template <template-id> <trip-id>
+
+?? PLANIFICACIÓN:
+node scripts/trip-planner.js create "Nombre" destino 2025-10-01 2025-10-04 [presupuesto]
+node scripts/trip-planner.js list
+node scripts/trip-planner.js show <trip-id>
+node scripts/trip-planner.js export <trip-id> [txt|json]
+node scripts/trip-planner.js stats
+
+?? INFORMACIÓN:
+node scripts/activity-manager.js stats
+node scripts/trip-planner.js stats
+
+?? FLUJO COMPLETO PARA NUEVOS DESTINOS:
+
+1. EXPLORAR DESTINO:
+   node scripts/activity-manager.js destination-info rome
+   node scripts/activity-manager.js list-templates rome
+
+2. CREAR VIAJE:
+   node scripts/trip-planner.js create "Roma Imperial" rome 2025-10-15 2025-10-18 800
+
+3. APLICAR TEMPLATE:
+   node scripts/trip-planner.js list (obtener trip ID)
+   node scripts/activity-manager.js apply-template rome_ancient TRIP_ID
+
+4. REVISAR Y EXPORTAR:
+   node scripts/trip-planner.js show TRIP_ID
+   node scripts/trip-planner.js export TRIP_ID txt
+
+EJEMPLOS ESPECÍFICOS POR DESTINO:
+
+???? ROMA:
+node scripts/trip-planner.js create "Roma en 3 días" rome 2025-11-01 2025-11-03 700
+node scripts/activity-manager.js apply-template rome_ancient TRIP_ID
+node scripts/activity-manager.js apply-template rome_foodie TRIP_ID
+
+???? LONDRES:
+node scripts/trip-planner.js create "Londres Real" london 2025-12-01 2025-12-04 1000
+node scripts/activity-manager.js apply-template london_royal TRIP_ID
+
+???? ÁMSTERDAM:
+node scripts/trip-planner.js create "Ámsterdam en Bici" amsterdam 2025-09-20 2025-09-22 600
+node scripts/activity-manager.js apply-template amsterdam_active TRIP_ID
+
+???? LISBOA:
+node scripts/trip-planner.js create "Lisboa Auténtica" lisbon 2025-10-10 2025-10-12 500
+node scripts/activity-manager.js apply-template lisbon_authentic TRIP_ID
+
+?? TIPS:
+- Usa 'stats' para ver estadísticas completas del sistema
+- 'destination-info' te da información detallada de cada ciudad
+- Los presupuestos se ajustan automáticamente a la moneda local
+- Puedes combinar múltiples templates en un mismo viaje

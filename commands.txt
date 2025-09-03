@@ -1,0 +1,34 @@
+?? TRIPWASE TEMPLATES CLI - COMANDOS RÁPIDOS
+
+GESTIÓN DE TEMPLATES:
+node scripts/activity-manager.js list-templates [madrid|barcelona|paris]
+node scripts/activity-manager.js list-activities [destino] [culture|food|art|nature]
+node scripts/activity-manager.js list-categories
+node scripts/activity-manager.js stats
+node scripts/activity-manager.js apply-template <template-id> <trip-id>
+
+PLANIFICACIÓN DE VIAJES:
+node scripts/trip-planner.js create "Nombre" destino 2025-09-15 2025-09-17 [presupuesto]
+node scripts/trip-planner.js list
+node scripts/trip-planner.js show <trip-id>
+node scripts/trip-planner.js export <trip-id> [txt|json]
+node scripts/trip-planner.js delete <trip-id>
+
+TEMPLATES DISPONIBLES:
+- madrid_cultural_classic (Arte y cultura de Madrid)
+- madrid_foodie (Gastronomía madrileña)  
+- barcelona_gaudi_route (Ruta arquitectónica de Gaudí)
+
+EJEMPLOS PRÁCTICOS:
+node scripts/trip-planner.js create "Fin de semana Madrid" madrid 2025-10-01 2025-10-03 500
+node scripts/activity-manager.js apply-template madrid_cultural_classic trip_123456789
+node scripts/trip-planner.js show trip_123456789
+node scripts/trip-planner.js export trip_123456789 txt
+
+FLUJO COMPLETO:
+1. node scripts/activity-manager.js list-templates madrid
+2. node scripts/trip-planner.js create "Mi Viaje" madrid 2025-10-15 2025-10-17 600
+3. node scripts/trip-planner.js list (obtener trip ID)
+4. node scripts/activity-manager.js apply-template madrid_cultural_classic TRIP_ID
+5. node scripts/trip-planner.js show TRIP_ID
+6. node scripts/trip-planner.js export TRIP_ID txt

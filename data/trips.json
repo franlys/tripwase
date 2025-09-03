@@ -1,0 +1,216 @@
+[
+  {
+    "id": "trip_1756849906261",
+    "name": "Test Madrid",
+    "destination": {
+      "name": "madrid",
+      "country": "Espa�a"
+    },
+    "dates": {
+      "startDate": "2025-10-01",
+      "endDate": "2025-10-03"
+    },
+    "travelers": {
+      "adults": 2,
+      "children": 0
+    },
+    "budget": {
+      "total": 500,
+      "spent": 0,
+      "currency": "EUR"
+    },
+    "status": "planning",
+    "createdAt": "2025-09-02T21:51:46.261Z",
+    "updatedAt": "2025-09-02T21:51:46.261Z",
+    "dayPlans": [],
+    "selectedTemplates": []
+  },
+  {
+    "id": "trip_1756849951592",
+    "name": "Mi Viaje",
+    "destination": {
+      "name": "madrid",
+      "country": "Espa�a"
+    },
+    "dates": {
+      "startDate": "2025-10-15",
+      "endDate": "2025-10-17"
+    },
+    "travelers": {
+      "adults": 2,
+      "children": 0
+    },
+    "budget": {
+      "total": 600,
+      "spent": 0,
+      "currency": "EUR"
+    },
+    "status": "planning",
+    "createdAt": "2025-09-02T21:52:31.592Z",
+    "updatedAt": "2025-09-02T21:52:31.592Z",
+    "dayPlans": [],
+    "selectedTemplates": []
+  },
+  {
+    "id": "trip_1756909489157",
+    "name": "Roma Imperial",
+    "destination": {
+      "name": "rome",
+      "country": "Italia",
+      "currency": "EUR"
+    },
+    "dates": {
+      "startDate": "2025-10-15",
+      "endDate": "2025-10-18"
+    },
+    "travelers": {
+      "adults": 2,
+      "children": 0
+    },
+    "budget": {
+      "total": 800,
+      "spent": 0,
+      "currency": "EUR"
+    },
+    "status": "planning",
+    "createdAt": "2025-09-03T14:24:49.157Z",
+    "updatedAt": "2025-09-03T14:24:49.159Z",
+    "dayPlans": [],
+    "selectedTemplates": []
+  },
+  {
+    "id": "trip_1756909489396",
+    "name": "Londres Real",
+    "destination": {
+      "name": "london",
+      "country": "Reino Unido",
+      "currency": "GBP"
+    },
+    "dates": {
+      "startDate": "2025-11-01",
+      "endDate": "2025-11-04"
+    },
+    "travelers": {
+      "adults": 2,
+      "children": 0
+    },
+    "budget": {
+      "total": 1200,
+      "spent": 0,
+      "currency": "GBP"
+    },
+    "status": "planning",
+    "createdAt": "2025-09-03T14:24:49.397Z",
+    "updatedAt": "2025-09-03T14:24:49.397Z",
+    "dayPlans": [],
+    "selectedTemplates": []
+  },
+  {
+    "id": "trip_1756909489593",
+    "name": "Amsterdam Bikes",
+    "destination": {
+      "name": "amsterdam",
+      "country": "Pa�ses Bajos",
+      "currency": "EUR"
+    },
+    "dates": {
+      "startDate": "2025-09-25",
+      "endDate": "2025-09-27"
+    },
+    "travelers": {
+      "adults": 2,
+      "children": 0
+    },
+    "budget": {
+      "total": 600,
+      "spent": 0,
+      "currency": "EUR"
+    },
+    "status": "planning",
+    "createdAt": "2025-09-03T14:24:49.594Z",
+    "updatedAt": "2025-09-03T14:24:49.594Z",
+    "dayPlans": [],
+    "selectedTemplates": []
+  },
+  {
+    "id": "trip_1756909489793",
+    "name": "Lisboa Fado",
+    "destination": {
+      "name": "lisbon",
+      "country": "Portugal",
+      "currency": "EUR"
+    },
+    "dates": {
+      "startDate": "2025-12-01",
+      "endDate": "2025-12-03"
+    },
+    "travelers": {
+      "adults": 2,
+      "children": 0
+    },
+    "budget": {
+      "total": 500,
+      "spent": 0,
+      "currency": "EUR"
+    },
+    "status": "planning",
+    "createdAt": "2025-09-03T14:24:49.794Z",
+    "updatedAt": "2025-09-03T14:24:49.794Z",
+    "dayPlans": [],
+    "selectedTemplates": []
+  },
+  {
+    "id": "trip_1756909549186",
+    "name": "Roma en 4 días",
+    "destination": {
+      "name": "rome",
+      "country": "Italia",
+      "currency": "EUR"
+    },
+    "dates": {
+      "startDate": "2025-11-01",
+      "endDate": "2025-11-04"
+    },
+    "travelers": {
+      "adults": 2,
+      "children": 0
+    },
+    "budget": {
+      "total": 900,
+      "spent": 0,
+      "currency": "EUR"
+    },
+    "status": "planning",
+    "createdAt": "2025-09-03T14:25:49.186Z",
+    "updatedAt": "2025-09-03T14:25:49.186Z",
+    "dayPlans": [],
+    "selectedTemplates": []
+  },
+  {
+    "id": "trip_1756909549354",
+    "name": "Londres Real",
+    "destination": {
+      "name": "london",
+      "country": "Reino Unido",
+      "currency": "GBP"
+    },
+    "dates": {
+      "startDate": "2025-12-01",
+      "endDate": "2025-12-04"
+    },
+    "travelers": {
+      "adults": 2,
+      "children": 0
+    },
+    "budget": {
+      "total": 1200,
+      "spent": 0,
+      "currency": "GBP"
+    },
+    "status": "planning",
+    "createdAt": "2025-09-03T14:25:49.355Z",
+    "updatedAt": "2025-09-03T14:25:49.355Z",
+    "dayPlans": [],
+    "selectedTemplates": []
+  }
+]

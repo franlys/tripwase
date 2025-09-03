@@ -1,38 +1,37 @@
 {
-  "name": "tripwase",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.8.0",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.126",
-    "@types/react": "^19.1.12",
-    "@types/react-dom": "^19.1.9",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "react-router-dom": "^6.30.1",
-    "react-scripts": "5.0.1",
-    "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
-  },
+  "name": "tripwase-cli",
+  "version": "1.0.0",
+  "description": "TripWase with CLI Templates functionality",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "templates": "node scripts/activity-manager.js",
+    "planner": "node scripts/trip-planner.js",
+    "stats": "node scripts/activity-manager.js stats",
+    "list-trips": "node scripts/trip-planner.js list"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "lucide-react": "^0.542.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^6.8.0",
+    "react-scripts": "5.0.1",
+    "web-vitals": "^5.1.0"
   },
+  "keywords": [
+    "travel",
+    "planning",
+    "cli",
+    "templates",
+    "react"
+  ],
+  "license": "MIT",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -46,6 +45,10 @@
     ]
   },
   "devDependencies": {
-    "@types/react-router-dom": "^5.3.3"
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.12"
   }
 }
