@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-export const FreeMapModal: React.FC<FreeMapModalProps> = ({ 
+const FreeMapModal: React.FC<FreeMapModalProps> = ({ 
   isOpen, 
   onClose, 
   onLocationSelect 
@@ -54,7 +54,7 @@ export const FreeMapModal: React.FC<FreeMapModalProps> = ({
       });
 
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
+        attribution: 'ï¿½ OpenStreetMap contributors',
         maxZoom: 19
       }).addTo(newMap);
 
@@ -88,7 +88,7 @@ export const FreeMapModal: React.FC<FreeMapModalProps> = ({
           `).openPopup();
 
         } catch (error) {
-          console.error('Error obteniendo información de ubicación:', error);
+          console.error('Error obteniendo informaciï¿½n de ubicaciï¿½n:', error);
           const locationName = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
           setSelectedLocation({
             name: locationName,
@@ -145,18 +145,18 @@ export const FreeMapModal: React.FC<FreeMapModalProps> = ({
 
           newMarker.bindPopup(`
             <div style="text-align: center;">
-              <b>${place.name || 'Ubicación'}</b><br/>
+              <b>${place.name || 'Ubicaciï¿½n'}</b><br/>
               <small>${locationName}</small><br/>
               <small>${lat.toFixed(6)}, ${lng.toFixed(6)}</small>
             </div>
           `).openPopup();
         }
       } else {
-        alert('No se encontró la ubicación. Intenta con otro nombre.');
+        alert('No se encontrï¿½ la ubicaciï¿½n. Intenta con otro nombre.');
       }
     } catch (error) {
-      console.error('Error en búsqueda:', error);
-      alert('Error al buscar la ubicación. Verifica tu conexión a internet.');
+      console.error('Error en bï¿½squeda:', error);
+      alert('Error al buscar la ubicaciï¿½n. Verifica tu conexiï¿½n a internet.');
     } finally {
       setIsSearching(false);
     }
@@ -190,7 +190,7 @@ export const FreeMapModal: React.FC<FreeMapModalProps> = ({
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Buscar cualquier lugar: ciudad, país, dirección..."
+                  placeholder="Buscar cualquier lugar: ciudad, paï¿½s, direcciï¿½n..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
@@ -230,7 +230,7 @@ export const FreeMapModal: React.FC<FreeMapModalProps> = ({
             <div className="text-sm text-gray-600 flex-1">
               {selectedLocation ? (
                 <div className="space-y-1">
-                  <div><strong>Ubicación seleccionada:</strong></div>
+                  <div><strong>Ubicaciï¿½n seleccionada:</strong></div>
                   <div className="text-gray-800 font-medium">{selectedLocation.name}</div>
                   <div className="text-xs text-gray-500">
                     Coordenadas: {selectedLocation.coordinates.lat.toFixed(6)}, {selectedLocation.coordinates.lng.toFixed(6)}
@@ -238,7 +238,7 @@ export const FreeMapModal: React.FC<FreeMapModalProps> = ({
                 </div>
               ) : (
                 <div className="text-gray-500">
-                  Busca un lugar o haz clic en el mapa para seleccionar una ubicación
+                  Busca un lugar o haz clic en el mapa para seleccionar una ubicaciï¿½n
                 </div>
               )}
             </div>
@@ -259,7 +259,7 @@ export const FreeMapModal: React.FC<FreeMapModalProps> = ({
                 disabled={!selectedLocation}
                 className="flex-1 sm:flex-none px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Confirmar Ubicación
+                Confirmar Ubicaciï¿½n
               </button>
             </div>
           </div>
@@ -268,3 +268,5 @@ export const FreeMapModal: React.FC<FreeMapModalProps> = ({
     </div>
   );
 };
+
+export default FreeMapModal;

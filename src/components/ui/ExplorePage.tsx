@@ -7,7 +7,7 @@ interface ExplorePageProps {
   onNavigateToPlanner: () => void;
 }
 
-export const ExplorePage: React.FC<ExplorePageProps> = ({ onNavigateToPlanner }) => {
+const ExplorePage: React.FC<ExplorePageProps> = ({ onNavigateToPlanner }) => {
   const [heroRef, heroVisible] = useScrollAnimation();
 
   return (
@@ -24,7 +24,7 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onNavigateToPlanner })
             Explora el Mundo
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed">
-            Descubre destinos increíbles, experiencias únicas y aventuras inolvidables
+            Descubre destinos increï¿½bles, experiencias ï¿½nicas y aventuras inolvidables
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
@@ -46,3 +46,6 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onNavigateToPlanner })
     </div>
   );
 };
+
+export default ExplorePage;
+

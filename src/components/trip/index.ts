@@ -1,2 +1,2 @@
 // src/components/trip/index.ts
-export { TripGenerator } from './TripGenerator';
+export { default as TripGenerator } from './TripGenerator';

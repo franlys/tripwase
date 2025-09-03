@@ -1,5 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useLocalStorage from '../hooks/useLocalStorage';
+import useAsync from '../hooks/useAsync';
 import useDebounce from '../hooks/useDebounce';
 
 export interface Destination {
@@ -25,7 +27,6 @@ export interface Trip {
   travelers: { adults: number; children: number; };
   budget: { total: number; spent: number; currency: string; };
   status: 'planning' | 'confirmed' | 'completed' | 'cancelled';
-  activities: any[];
   createdAt: string;
   updatedAt: string;
 }
@@ -66,70 +67,120 @@ const initialSearchFilters: SearchFilters = {
   travelers: { adults: 2, children: 0 }
 };
 
+// DATOS MOCK EST√ÅTICOS FUERA DEL COMPONENTE
 const MOCK_DESTINATIONS: Destination[] = [
   {
-    id: 'madrid', name: 'Madrid', country: 'EspaÒa',
+    id: 'madrid', name: 'Madrid', country: 'Espa√±a',
     description: 'Capital vibrante con rica historia.',
     averagePrice: 85, currency: 'EUR', popularityScore: 9.2,
     weatherInfo: { averageTemp: 18, bestMonths: ['Mayo', 'Junio'], climate: 'Continental' }
   },
   {
-    id: 'barcelona', name: 'Barcelona', country: 'EspaÒa',
-    description: 'Ciudad cosmopolita con arquitectura ˙nica.',
+    id: 'barcelona', name: 'Barcelona', country: 'Espa√±a',
+    description: 'Ciudad cosmopolita con arquitectura √∫nica.',
     averagePrice: 92, currency: 'EUR', popularityScore: 9.5,
-    weatherInfo: { averageTemp: 20, bestMonths: ['Abril', 'Mayo'], climate: 'Mediterr·neo' }
+    weatherInfo: { averageTemp: 20, bestMonths: ['Abril', 'Mayo'], climate: 'Mediterr√°neo' }
   },
   {
-    id: 'paris', name: 'ParÌs', country: 'Francia',
-    description: 'Ciudad del amor con monumentos icÛnicos.',
+    id: 'paris', name: 'Par√≠s', country: 'Francia',
+    description: 'Ciudad del amor con monumentos ic√≥nicos.',
     averagePrice: 125, currency: 'EUR', popularityScore: 9.8,
-    weatherInfo: { averageTemp: 16, bestMonths: ['Mayo', 'Junio'], climate: 'Oce·nico' }
+    weatherInfo: { averageTemp: 16, bestMonths: ['Mayo', 'Junio'], climate: 'Oce√°nico' }
   },
   {
     id: 'rome', name: 'Roma', country: 'Italia',
     description: 'Ciudad eterna con historia milenaria.',
     averagePrice: 95, currency: 'EUR', popularityScore: 9.4,
-    weatherInfo: { averageTemp: 19, bestMonths: ['Abril', 'Mayo'], climate: 'Mediterr·neo' }
+    weatherInfo: { averageTemp: 19, bestMonths: ['Abril', 'Mayo'], climate: 'Mediterr√°neo' }
   },
   {
     id: 'london', name: 'Londres', country: 'Reino Unido',
-    description: 'MetrÛpoli multicultural con tradiciÛn.',
+    description: 'Metr√≥poli multicultural con tradici√≥n.',
     averagePrice: 140, currency: 'EUR', popularityScore: 9.1,
-    weatherInfo: { averageTemp: 12, bestMonths: ['Junio', 'Julio'], climate: 'Oce·nico' }
+    weatherInfo: { averageTemp: 12, bestMonths: ['Junio', 'Julio'], climate: 'Oce√°nico' }
   }
 ];
 
+// Crear y exportar el contexto
 export const TripContext = createContext<TripContextType | null>(null);
 
 const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Destination[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [currentTrip, setCurrentTrip] = useState<Trip | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>(initialSearchFilters);
   
   const [trips, setTrips] = useLocalStorage<Trip[]>('tripwase_trips', []);
   const [favorites, setFavorites] = useLocalStorage<Destination[]>('tripwase_favorites', []);
   const [searchHistory, setSearchHistory] = useLocalStorage<string[]>('tripwase_search_history', []);
-  const [currentTrip, setCurrentTrip] = useLocalStorage<Trip | null>('tripwase_current_trip', null);
   
   const debouncedQuery = useDebounce(searchQuery, 300);
 
-  const performSearch = useCallback(async (query: string): Promise<Destination[]> => {
-    if (!query || query.trim().length === 0) return [];
-    
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    return MOCK_DESTINATIONS.filter(d => 
-      d.name.toLowerCase().includes(query.toLowerCase()) ||
-      d.country.toLowerCase().includes(query.toLowerCase()) ||
-      d.description.toLowerCase().includes(query.toLowerCase())
-    );
-  }, []);
+  // FUNCI√ìN DE B√öSQUEDA ESTABLE
+  const performSearch = useMemo(() => {
+    return async (query: string): Promise<Destination[]> => {
+      if (!query || query.trim().length === 0) return [];
+      
+      // Simular delay de red
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      return MOCK_DESTINATIONS.filter(d => 
+        d.name.toLowerCase().includes(query.toLowerCase()) ||
+        d.country.toLowerCase().includes(query.toLowerCase()) ||
+        d.description.toLowerCase().includes(query.toLowerCase())
+      );
+    };
+  }, []); // Sin dependencias - funci√≥n completamente estable
 
-  // COMENTADO TEMPORALMENTE - LOOP INFINITO
-  // 
+  // EFFECT OPTIMIZADO PARA EVITAR LOOPS
+  useEffect(() => {
+    let isCancelled = false;
 
+    const executeSearch = async () => {
+      if (debouncedQuery && debouncedQuery.trim().length > 0) {
+        setIsSearching(true);
+        setError(null);
+        
+        try {
+          const results = await performSearch(debouncedQuery);
+          
+          if (!isCancelled) {
+            setSearchResults(results);
+            
+            // Actualizar historial solo si es necesario
+            setSearchHistory(prev => {
+              if (prev[0] === debouncedQuery) return prev; // Ya est√° primero
+              const filtered = prev.filter(h => h !== debouncedQuery);
+              return [debouncedQuery, ...filtered].slice(0, 10);
+            });
+          }
+        } catch (err) {
+          if (!isCancelled) {
+            console.error('Error en b√∫squeda:', err);
+            setError('Error al buscar destinos');
+            setSearchResults([]);
+          }
+        } finally {
+          if (!isCancelled) {
+            setIsSearching(false);
+          }
+        }
+      } else {
+        setSearchResults([]);
+        setIsSearching(false);
+      }
+    };
+
+    executeSearch();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [debouncedQuery, performSearch, setSearchHistory]);
+
+  // FUNCIONES ESTABLES CON useCallback
   const updateSearchFilters = useCallback((newFilters: Partial<SearchFilters>) => {
     setSearchFilters(prev => ({
       ...prev,
@@ -156,38 +207,26 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         currency: searchFilters.budget.currency 
       },
       status: 'planning',
-      activities: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-
     setCurrentTrip(newTrip);
-    setTrips(prev => {
-      const filtered = prev.filter(t => t.id !== newTrip.id);
-      return [...filtered, newTrip];
-    });
-  }, [searchFilters, setCurrentTrip, setTrips]);
+  }, [searchFilters]);
 
   const updateTripDetails = useCallback((updates: Partial<Trip>) => {
-    if (!currentTrip) return;
-    
-    const updatedTrip = { 
-      ...currentTrip, 
-      ...updates, 
-      updatedAt: new Date().toISOString() 
-    };
-    
-    setCurrentTrip(updatedTrip);
-    setTrips(prev => 
-      prev.map(trip => 
-        trip.id === updatedTrip.id ? updatedTrip : trip
-      )
-    );
-  }, [currentTrip, setCurrentTrip, setTrips]);
+    setCurrentTrip(prev => {
+      if (!prev) return null;
+      return { 
+        ...prev, 
+        ...updates, 
+        updatedAt: new Date().toISOString() 
+      };
+    });
+  }, []);
 
   const editTrip = useCallback((trip: Trip) => {
     setCurrentTrip(trip);
-  }, [setCurrentTrip]);
+  }, []);
 
   const saveTrip = useCallback(() => {
     if (!currentTrip) return;
@@ -196,6 +235,7 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       const filtered = prev.filter(t => t.id !== currentTrip.id);
       return [...filtered, currentTrip];
     });
+    setCurrentTrip(null);
   }, [currentTrip, setTrips]);
 
   const deleteTrip = useCallback((tripId: string) => {
@@ -203,7 +243,7 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     if (currentTrip?.id === tripId) {
       setCurrentTrip(null);
     }
-  }, [setTrips, currentTrip, setCurrentTrip]);
+  }, [setTrips, currentTrip]);
 
   const addToFavorites = useCallback((destination: Destination) => {
     setFavorites(prev => {
@@ -239,6 +279,7 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     setSearchQuery(query);
   }, []);
 
+  // VALOR MEMOIZADO DEL CONTEXTO
   const contextValue = useMemo((): TripContextType => ({
     searchQuery,
     searchResults,
@@ -275,4 +316,5 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   );
 };
 
+// Exportar TripProvider
 export { TripProvider };

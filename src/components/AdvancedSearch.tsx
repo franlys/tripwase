@@ -17,11 +17,6 @@ interface FilterState {
     adults: number;
     children: number;
   };
-  preferences: {
-    climate: string[];
-    activities: string[];
-    accommodation: string;
-  };
 }
 
 const AdvancedSearch: React.FC = () => {
@@ -29,12 +24,7 @@ const AdvancedSearch: React.FC = () => {
     query: '',
     budget: { min: 100, max: 3000, currency: 'EUR' },
     dates: { startDate: '', endDate: '', flexible: false },
-    travelers: { adults: 2, children: 0 },
-    preferences: {
-      climate: [],
-      activities: [],
-      accommodation: 'any'
-    }
+    travelers: { adults: 2, children: 0 }
   });
 
   const [showFilters, setShowFilters] = useState(false);
@@ -53,7 +43,9 @@ const AdvancedSearch: React.FC = () => {
     startTripPlanning
   } = useTrip();
 
-
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, query: searchQuery }));
+  }, [searchQuery]);
 
   const handleSearch = (query: string) => {
     setFilters(prev => ({ ...prev, query }));
@@ -76,12 +68,7 @@ const AdvancedSearch: React.FC = () => {
       query: '',
       budget: { min: 100, max: 3000, currency: 'EUR' },
       dates: { startDate: '', endDate: '', flexible: false },
-      travelers: { adults: 2, children: 0 },
-      preferences: {
-        climate: [],
-        activities: [],
-        accommodation: 'any'
-      }
+      travelers: { adults: 2, children: 0 }
     });
     searchDestinations('');
   };
@@ -107,15 +94,12 @@ const AdvancedSearch: React.FC = () => {
     }
   }, [searchResults, sortBy]);
 
-  const climateOptions = ['Tropical', 'Templado', 'Mediterráneo', 'Continental', 'Oceánico'];
-  const activityOptions = ['Cultura', 'Aventura', 'Playa', 'Montaña', 'Gastronomía', 'Vida Nocturna'];
-  const accommodationOptions = [
-    { value: 'any', label: 'Cualquiera' },
-    { value: 'hotel', label: 'Hotel' },
-    { value: 'hostel', label: 'Hostel' },
-    { value: 'apartment', label: 'Apartamento' },
-    { value: 'resort', label: 'Resort' }
-  ];
+  const getResultsText = () => {
+    if (isSearching) return 'Buscando...';
+    return `${searchResults.length} destinos encontrados`;
+  };
+
+  const quickSearchCities = ['Madrid', 'París', 'Roma', 'Barcelona', 'Londres', 'Berlín', 'Amsterdam'];
 
   return (
     <div style={{
@@ -125,6 +109,7 @@ const AdvancedSearch: React.FC = () => {
       fontFamily: 'Arial, sans-serif',
       color: 'white'
     }}>
+      {/* Header Section */}
       <div style={{
         backgroundColor: '#1f2937',
         borderRadius: '16px',
@@ -161,8 +146,6 @@ const AdvancedSearch: React.FC = () => {
               boxSizing: 'border-box',
               outline: 'none'
             }}
-            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-            onBlur={(e) => e.target.style.borderColor = '#374151'}
           />
           <div style={{
             position: 'absolute',
@@ -201,7 +184,7 @@ const AdvancedSearch: React.FC = () => {
           flexWrap: 'wrap',
           justifyContent: 'center'
         }}>
-          {['Madrid', 'París', 'Roma', 'Barcelona', 'Londres', 'Berlín', 'Amsterdam'].map(city => (
+          {quickSearchCities.map(city => (
             <button
               key={city}
               onClick={() => handleSearch(city)}
@@ -425,7 +408,7 @@ const AdvancedSearch: React.FC = () => {
           marginBottom: '25px'
         }}>
           <h2 style={{ color: '#f9fafb', margin: '0' }}>
-            {isSearching ? 'Buscando...' : `${searchResults.length} destinos encontrados`}
+            {getResultsText()}
           </h2>
           
           {searchResults.length > 0 && (
@@ -487,14 +470,6 @@ const AdvancedSearch: React.FC = () => {
                   padding: '25px',
                   border: '1px solid #4b5563',
                   transition: 'transform 0.3s, box-shadow 0.3s'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.3)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
                 }}
               >
                 {/* Destination Header */}
@@ -611,8 +586,6 @@ const AdvancedSearch: React.FC = () => {
                     cursor: 'pointer',
                     transition: 'background-color 0.3s'
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
                 >
                   Planificar Viaje a {destination.name}
                 </button>

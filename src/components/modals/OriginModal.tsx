@@ -15,14 +15,14 @@ interface CountryOption {
 }
 
 const countryOptions: CountryOption[] = [
-  { code: 'DO', name: 'República Dominicana', cities: ['Santo Domingo', 'Santiago', 'Puerto Plata', 'Punta Cana'] },
+  { code: 'DO', name: 'Repï¿½blica Dominicana', cities: ['Santo Domingo', 'Santiago', 'Puerto Plata', 'Punta Cana'] },
   { code: 'US', name: 'Estados Unidos', cities: ['New York', 'Miami', 'Los Angeles', 'Chicago'] },
-  { code: 'CO', name: 'Colombia', cities: ['Bogotá', 'Cartagena', 'Medellín', 'Barranquilla'] },
-  { code: 'MX', name: 'México', cities: ['Ciudad de México', 'Cancún', 'Guadalajara', 'Monterrey'] },
-  { code: 'ES', name: 'España', cities: ['Madrid', 'Barcelona', 'Valencia', 'Sevilla'] }
+  { code: 'CO', name: 'Colombia', cities: ['Bogotï¿½', 'Cartagena', 'Medellï¿½n', 'Barranquilla'] },
+  { code: 'MX', name: 'Mï¿½xico', cities: ['Ciudad de Mï¿½xico', 'Cancï¿½n', 'Guadalajara', 'Monterrey'] },
+  { code: 'ES', name: 'Espaï¿½a', cities: ['Madrid', 'Barcelona', 'Valencia', 'Sevilla'] }
 ];
 
-export const OriginModal: React.FC<OriginModalProps> = ({ isOpen, onConfirm }) => {
+const OriginModal: React.FC<OriginModalProps> = ({ isOpen, onConfirm }) => {
   const [selectedCountry, setSelectedCountry] = useState<CountryCode>('DO');
   const [selectedCity, setSelectedCity] = useState('Santo Domingo');
 
@@ -48,13 +48,13 @@ export const OriginModal: React.FC<OriginModalProps> = ({ isOpen, onConfirm }) =
               <Map className="w-8 h-8 text-blue-600" />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Bienvenido a TripWase</h2>
-            <p className="text-gray-600">Para comenzar, necesitamos saber desde dónde viajarás</p>
+            <p className="text-gray-600">Para comenzar, necesitamos saber desde dï¿½nde viajarï¿½s</p>
           </div>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Selecciona tu país actual:
+                Selecciona tu paï¿½s actual:
               </label>
               <select
                 value={selectedCountry}
@@ -94,7 +94,7 @@ export const OriginModal: React.FC<OriginModalProps> = ({ isOpen, onConfirm }) =
 
           <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-amber-800 text-sm">
-              <strong>Importante:</strong> Esta información nos ayuda a determinar automáticamente 
+              <strong>Importante:</strong> Esta informaciï¿½n nos ayuda a determinar automï¿½ticamente 
               si necesitas vuelos o puedes viajar por carretera a tu destino.
             </p>
           </div>
@@ -109,4 +109,6 @@ export const OriginModal: React.FC<OriginModalProps> = ({ isOpen, onConfirm }) =
       </div>
     </div>
   );
-};
+}
+
+export default OriginModal;

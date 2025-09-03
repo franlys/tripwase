@@ -1,2 +1,2 @@
 // src/components/ui/index.ts
-export { ExplorePage } from './ExplorePage';
+export { default as ExplorePage } from './ExplorePage';

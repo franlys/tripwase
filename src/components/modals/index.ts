@@ -1,3 +1,4 @@
 // src/components/modals/index.ts
-export { OriginModal } from './OriginModal';
-export { FreeMapModal } from './FreeMapModal';
+export { default as OriginModal } from './OriginModal';
+export { default as FreeMapModal } from './FreeMapModal';
+export { default as PlanDetailsModal } from './PlanDetailsModal';

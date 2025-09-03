@@ -16,37 +16,21 @@ const Navigation: React.FC = () => {
     {
       path: '/dashboard',
       label: 'Dashboard',
-      icon: '??',
+      icon: 'ðŸ ',
       description: 'Panel principal'
     },
     {
       path: '/search',
-      label: 'Búsqueda',
-      icon: '??',
+      label: 'BÃºsqueda',
+      icon: 'ðŸ”',
       description: 'Encontrar destinos'
-    },
-    {
-      path: '/templates',
-      label: 'Templates',
-      icon: '??',
-      description: '7 destinos disponibles'
     },
     {
       path: '/planner',
       label: 'Planificador',
-      icon: '??',
+      icon: 'ðŸ“‹',
       description: currentTrip ? `Planificando: ${currentTrip.destination.name}` : 'Sin viaje activo'
     }
-  ];
-
-  const destinations = [
-    { city: 'Madrid', country: 'España', flag: '????' },
-    { city: 'Barcelona', country: 'España', flag: '????' },
-    { city: 'París', country: 'Francia', flag: '????' },
-    { city: 'Roma', country: 'Italia', flag: '????' },
-    { city: 'Londres', country: 'Reino Unido', flag: '????' },
-    { city: 'Ámsterdam', country: 'Países Bajos', flag: '????' },
-    { city: 'Lisboa', country: 'Portugal', flag: '????' }
   ];
 
   return (
@@ -61,6 +45,7 @@ const Navigation: React.FC = () => {
         maxWidth: '1200px',
         margin: '0 auto'
       }}>
+        {/* Hero Section */}
         <div style={{
           textAlign: 'center',
           marginBottom: '30px',
@@ -82,7 +67,7 @@ const Navigation: React.FC = () => {
             margin: '0',
             opacity: 0.9
           }}>
-            Planifica viajes perfectos en 7 destinos europeos
+            Planifica tus viajes perfectos
           </p>
           {user && (
             <div style={{
@@ -95,6 +80,7 @@ const Navigation: React.FC = () => {
           )}
         </div>
 
+        {/* Navigation Items */}
         <div style={{
           display: 'flex',
           gap: '15px',
@@ -152,67 +138,7 @@ const Navigation: React.FC = () => {
           ))}
         </div>
 
-        {/* Destinations Panel */}
-        <div style={{
-          marginTop: '20px',
-          padding: '15px',
-          backgroundColor: '#374151',
-          borderRadius: '8px',
-          textAlign: 'center'
-        }}>
-          <div style={{ 
-            marginBottom: '10px', 
-            fontWeight: 'bold', 
-            color: '#fbbf24',
-            fontSize: '14px'
-          }}>
-            ?? Destinos Disponibles
-          </div>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            gap: '15px', 
-            flexWrap: 'wrap',
-            fontSize: '12px',
-            color: '#d1d5db'
-          }}>
-            {destinations.map((dest, index) => (
-              <span key={index} style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '5px',
-                padding: '5px 10px',
-                backgroundColor: '#4b5563',
-                borderRadius: '12px'
-              }}>
-                <span>{dest.flag}</span>
-                <span>{dest.city}</span>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* CLI Commands Panel */}
-        <div style={{
-          marginTop: '15px',
-          padding: '15px',
-          backgroundColor: '#1f2937',
-          borderRadius: '8px',
-          fontSize: '12px',
-          color: '#d1d5db',
-          textAlign: 'center',
-          border: '1px solid #374151'
-        }}>
-          <div style={{ marginBottom: '8px', fontWeight: 'bold', color: '#10b981' }}>
-            ?? Templates CLI Expandido (14 Templates)
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-            <span>?? Ver destinos: <code>node scripts/activity-manager.js list-destinations</code></span>
-            <span>?? Templates: <code>node scripts/activity-manager.js list-templates rome</code></span>
-            <span>?? Crear: <code>node scripts/trip-planner.js create "Viaje" destino 2025-10-01 2025-10-03</code></span>
-          </div>
-        </div>
-
+        {/* Breadcrumbs */}
         <div style={{
           marginTop: '25px',
           textAlign: 'center',
@@ -221,8 +147,7 @@ const Navigation: React.FC = () => {
           fontWeight: '500'
         }}>
           {location.pathname === '/dashboard' && 'Panel Principal'}
-          {location.pathname === '/search' && 'Búsqueda Avanzada de Destinos'}
-          {location.pathname === '/templates' && 'Templates CLI - 7 Destinos Europeos'}
+          {location.pathname === '/search' && 'BÃºsqueda Avanzada de Destinos'}
           {location.pathname === '/planner' && (currentTrip ? `Planificador - ${currentTrip.destination.name}` : 'Planificador de Viajes')}
           {location.pathname === '/' && 'Inicio'}
         </div>

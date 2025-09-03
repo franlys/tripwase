@@ -3,91 +3,88 @@ import React, { useState } from 'react';
 import { Globe, LogOut } from './components/SimpleIcons';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
-import { TripGenerator, ExplorePage } from './components';
-import { DashboardView } from './types';
+import { TripProvider } from './contexts/TripContext';
+import TripGenerator from './components/trip/TripGenerator';
+import ExplorePage from './components/ui/ExplorePage';
 
-const Dashboard: React.FC<{
-  onNavigateToPlanner: () => void;
-  onNavigateToExplore: () => void;
-  currentView: DashboardView;
-}> = ({ onNavigateToPlanner, onNavigateToExplore, currentView }) => {
+type ViewType = 'explore' | 'trip' | 'dashboard';
+
+const AppContent: React.FC = () => {
+  const [currentView, setCurrentView] = useState<ViewType>('explore');
   const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <div className="bg-white shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-xl">
-                <Globe className="w-8 h-8" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  TripWase
-                </h1>
-                <p className="text-gray-600 text-sm">Hola, {user?.name}!</p>
-              </div>
-            </div>
-            
-            <button
-              onClick={logout}
-              className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:block">Cerrar sesión</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {currentView === 'explore' ? (
-        <ExplorePage onNavigateToPlanner={onNavigateToPlanner} />
-      ) : (
-        <TripGenerator onBackToExplore={onNavigateToExplore} />
-      )}
-    </div>
-  );
-};
-
-const AppContent: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
-  const [dashboardView, setDashboardView] = useState<DashboardView>('explore');
-
-  const handleNavigateToPlanner = () => {
-    setDashboardView('planner');
-  };
-
-  const handleNavigateToExplore = () => {
-    setDashboardView('explore');
-  };
-
-  if (isAuthenticated) {
-    return (
-      <Dashboard 
-        onNavigateToPlanner={handleNavigateToPlanner}
-        onNavigateToExplore={handleNavigateToExplore}
-        currentView={dashboardView}
-      />
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-lg mx-4">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+    <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
+      {/* Header */}
+      <header style={{
+        backgroundColor: '#1e293b', padding: '16px 24px',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Globe className="w-8 h-8" />
+          <h1 style={{ color: 'white', margin: 0, fontSize: '24px', fontWeight: 'bold' }}>
             TripWase
           </h1>
-          <p className="text-gray-600 mb-8">Generador inteligente refactorizado en TypeScript</p>
-          
-          <div className="mt-8 text-sm text-gray-500">
-            <p>Sistema refactorizado funcionando</p>
-            <p>Usa el AuthContext existente para iniciar sesión</p>
-            <p>Navega a /dashboard o /search para ver la funcionalidad</p>
-          </div>
         </div>
-      </div>
+        
+        {user && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <span style={{ color: 'white' }}>Hola, {user.name}!</span>
+            <button
+              onClick={logout}
+              style={{
+                padding: '8px 16px', backgroundColor: '#374151',
+                color: 'white', border: 'none', borderRadius: '6px',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px'
+              }}
+            >
+              <LogOut className="w-4 h-4" />
+              Cerrar sesión
+            </button>
+          </div>
+        )}
+      </header>
+
+      {/* Navigation */}
+      <nav style={{
+        backgroundColor: 'white', padding: '16px 24px',
+        borderBottom: '1px solid #e5e7eb'
+      }}>
+        <div style={{ display: 'flex', gap: '24px' }}>
+          <button
+            onClick={() => setCurrentView('explore')}
+            style={{
+              padding: '8px 16px', background: 'none',
+              border: currentView === 'explore' ? '2px solid #3b82f6' : 'none',
+              color: currentView === 'explore' ? '#3b82f6' : '#6b7280',
+              borderRadius: '6px', cursor: 'pointer'
+            }}
+          >
+            Explorar
+          </button>
+          <button
+            onClick={() => setCurrentView('trip')}
+            style={{
+              padding: '8px 16px', background: 'none',
+              border: currentView === 'trip' ? '2px solid #3b82f6' : 'none',
+              color: currentView === 'trip' ? '#3b82f6' : '#6b7280',
+              borderRadius: '6px', cursor: 'pointer'
+            }}
+          >
+            Planificar Viaje
+          </button>
+        </div>
+      </nav>
+
+      {/* Content */}
+      <main>
+        {currentView === 'explore' && (
+          <ExplorePage onNavigateToPlanner={() => setCurrentView('trip')} />
+        )}
+        {currentView === 'trip' && (
+          <TripGenerator onBackToExplore={() => setCurrentView('explore')} />
+        )}
+      </main>
     </div>
   );
 };
@@ -95,12 +92,13 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <FavoritesProvider>
-        <AppContent />
-      </FavoritesProvider>
+      <TripProvider>
+        <FavoritesProvider>
+          <AppContent />
+        </FavoritesProvider>
+      </TripProvider>
     </AuthProvider>
   );
 };
 
 export default App;
-

@@ -9,4 +9,5 @@ export const useTrip = () => {
   return context;
 };
 
+// Export vacío para hacer el archivo un módulo válido
 export {};

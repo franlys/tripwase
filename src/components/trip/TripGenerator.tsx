@@ -8,7 +8,7 @@ interface TripGeneratorProps {
   onBackToExplore: () => void;
 }
 
-export const TripGenerator: React.FC<TripGeneratorProps> = ({ onBackToExplore }) => {
+const TripGenerator: React.FC<TripGeneratorProps> = ({ onBackToExplore }) => {
   const [formData, setFormData] = useState<TripFormData>({
     destination: '',
     startDate: '',
@@ -168,3 +168,6 @@ export const TripGenerator: React.FC<TripGeneratorProps> = ({ onBackToExplore })
     </div>
   );
 };
+
+export default TripGenerator;
+

@@ -1,93 +1,96 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTrip } from '../hooks/useTrip';
+import type { Trip, Destination } from '../contexts/TripContext';
 
 const Dashboard: React.FC = () => {
   const [activeSection, setActiveSection] = useState<'overview' | 'search' | 'trips'>('overview');
-  
-  // Contexts
   const { user } = useAuth();
   const { 
     trips, 
     favorites, 
+    currentTrip, 
     searchResults, 
-    isSearching, 
-    searchQuery,
-    searchDestinations,
+    searchDestinations, 
+    addToFavorites, 
+    removeFromFavorites, 
+    isFavorite,
     startTripPlanning,
-    addToFavorites,
-    removeFromFavorites,
-    isFavorite 
+    editTrip,
+    deleteTrip 
   } = useTrip();
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', { 
-      style: 'currency', 
-      currency: 'EUR' 
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR'
     }).format(amount);
   };
 
-  const handleQuickSearch = (query: string) => {
-    searchDestinations(query);
-    setActiveSection('search');
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'No definida';
+    return new Date(dateString).toLocaleDateString('es-ES');
+  };
+
+  const getStatusColor = (status: string) => {
+    const colors = {
+      planning: '#f59e0b',
+      confirmed: '#10b981',
+      completed: '#3b82f6',
+      cancelled: '#ef4444'
+    };
+    return colors[status as keyof typeof colors] || '#6b7280';
+  };
+
+  const getStatusText = (status: string) => {
+    const texts = {
+      planning: 'Planificando',
+      confirmed: 'Confirmado',
+      completed: 'Completado',
+      cancelled: 'Cancelado'
+    };
+    return texts[status as keyof typeof texts] || status;
   };
 
   return (
     <div style={{
-      padding: '20px',
       maxWidth: '1200px',
       margin: '0 auto',
+      padding: '20px',
       fontFamily: 'Arial, sans-serif',
       color: 'white'
     }}>
-      {/* Header */}
+      {/* Welcome Header */}
       <div style={{
-        backgroundColor: '#1e293b',
+        backgroundColor: '#1f2937',
         padding: '30px',
         borderRadius: '16px',
         marginBottom: '30px',
-        background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+        textAlign: 'center'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 style={{ 
-              margin: '0 0 10px 0', 
-              fontSize: '2.5rem',
-              background: 'linear-gradient(45deg, #3b82f6, #10b981)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}>
-              TripWase Dashboard
-            </h1>
-            <p style={{ margin: '0', color: '#94a3b8', fontSize: '1.1rem' }}>
-              {user ? `Bienvenido, ${user.name}` : 'Planifica tu próximo viaje'}
-            </p>
-          </div>
-          
-          <div style={{ textAlign: 'right' }}>
-            {user && (
-              <div style={{
-                backgroundColor: '#065f46',
-                padding: '15px 20px',
-                borderRadius: '12px',
-                border: '1px solid #047857'
-              }}>
-                <div style={{ color: '#a7f3d0', fontSize: '14px' }}>{user.role?.toUpperCase()}</div>
-                <div style={{ color: '#d1fae5', fontSize: '16px', fontWeight: 'bold' }}>
-                  {user.email}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <h1 style={{ 
+          margin: '0 0 10px 0', 
+          fontSize: '2.5rem',
+          background: 'linear-gradient(45deg, #3b82f6, #10b981)',
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
+        }}>
+          ¡Hola, {user?.name || 'Viajero'}!
+        </h1>
+        <p style={{ 
+          margin: '0', 
+          fontSize: '1.1rem', 
+          color: '#9ca3af' 
+        }}>
+          Bienvenido a tu centro de planificación de viajes
+        </p>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation Tabs */}
       <div style={{
         backgroundColor: '#374151',
-        padding: '20px',
+        padding: '15px',
         borderRadius: '12px',
         marginBottom: '30px',
         display: 'flex',
@@ -95,26 +98,28 @@ const Dashboard: React.FC = () => {
         justifyContent: 'center'
       }}>
         {[
-          { id: 'overview', label: 'Resumen' },
-          { id: 'search', label: 'Búsqueda' },
-          { id: 'trips', label: 'Mis Viajes' }
-        ].map(section => (
+          { id: 'overview', label: 'Resumen', icon: '📊' },
+          { id: 'search', label: 'Búsqueda Rápida', icon: '🔍' },
+          { id: 'trips', label: 'Mis Viajes', icon: '✈️' }
+        ].map(tab => (
           <button
-            key={section.id}
-            onClick={() => setActiveSection(section.id as any)}
+            key={tab.id}
+            onClick={() => setActiveSection(tab.id as any)}
             style={{
-              padding: '12px 24px',
-              backgroundColor: activeSection === section.id ? '#3b82f6' : 'transparent',
-              color: activeSection === section.id ? 'white' : '#d1d5db',
+              padding: '12px 20px',
+              backgroundColor: activeSection === tab.id ? '#3b82f6' : 'transparent',
+              color: activeSection === tab.id ? 'white' : '#d1d5db',
               border: '1px solid #4b5563',
               borderRadius: '8px',
               cursor: 'pointer',
-              fontSize: '16px',
-              fontWeight: activeSection === section.id ? 'bold' : 'normal',
-              transition: 'all 0.3s'
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
             }}
           >
-            {section.label}
+            <span>{tab.icon}</span>
+            {tab.label}
           </button>
         ))}
       </div>
@@ -122,13 +127,14 @@ const Dashboard: React.FC = () => {
       {/* Overview Section */}
       {activeSection === 'overview' && (
         <div>
-          {/* Quick Stats */}
+          {/* Stats Cards */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
             gap: '20px',
             marginBottom: '30px'
           }}>
+            {/* Total Trips */}
             <div style={{
               backgroundColor: '#1e40af',
               padding: '25px',
@@ -139,86 +145,97 @@ const Dashboard: React.FC = () => {
               <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#dbeafe' }}>
                 {trips.length}
               </div>
-              <div style={{ color: '#93c5fd' }}>Viajes Planificados</div>
+              <div style={{ color: '#bfdbfe' }}>Viajes Totales</div>
             </div>
 
+            {/* Favorites */}
             <div style={{
-              backgroundColor: '#dc2626',
+              backgroundColor: '#be185d',
               padding: '25px',
               borderRadius: '12px',
               textAlign: 'center'
             }}>
               <div style={{ fontSize: '3rem', marginBottom: '10px' }}>❤️</div>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#fecaca' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#fce7f3' }}>
                 {favorites.length}
               </div>
-              <div style={{ color: '#fca5a5' }}>Destinos Favoritos</div>
+              <div style={{ color: '#fbcfe8' }}>Destinos Favoritos</div>
             </div>
 
+            {/* Total Budget */}
             <div style={{
-              backgroundColor: '#059669',
+              backgroundColor: '#047857',
               padding: '25px',
               borderRadius: '12px',
               textAlign: 'center'
             }}>
               <div style={{ fontSize: '3rem', marginBottom: '10px' }}>💰</div>
               <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#d1fae5' }}>
-                {formatCurrency(trips.reduce((sum, trip) => sum + trip.budget.total, 0))}
+                {formatCurrency(trips.reduce((sum: number, trip: Trip) => sum + trip.budget.total, 0))}
               </div>
               <div style={{ color: '#a7f3d0' }}>Presupuesto Total</div>
             </div>
-          </div>
 
-          {/* Quick Search */}
-          <div style={{
-            backgroundColor: '#1f2937',
-            padding: '30px',
-            borderRadius: '12px',
-            marginBottom: '30px'
-          }}>
-            <h2 style={{ color: '#f9fafb', marginBottom: '20px' }}>Búsqueda Rápida</h2>
+            {/* Countries Visited */}
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-              gap: '15px'
+              backgroundColor: '#7c2d12',
+              padding: '25px',
+              borderRadius: '12px',
+              textAlign: 'center'
             }}>
-              {['Madrid', 'París', 'Roma', 'Barcelona', 'Londres'].map(city => (
-                <button
-                  key={city}
-                  onClick={() => handleQuickSearch(city)}
-                  style={{
-                    padding: '15px 20px',
-                    backgroundColor: '#374151',
-                    color: '#d1d5db',
-                    border: '1px solid #4b5563',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    transition: 'all 0.3s'
-                  }}
-                >
-                  {city}
-                </button>
-              ))}
+              <div style={{ fontSize: '3rem', marginBottom: '10px' }}>🌍</div>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#fed7aa' }}>
+                {new Set(trips.map((trip: Trip) => trip.destination.country)).size}
+              </div>
+              <div style={{ color: '#fdba74' }}>Países Visitados</div>
             </div>
           </div>
+
+          {/* Current Trip */}
+          {currentTrip && (
+            <div style={{
+              backgroundColor: '#1f2937',
+              padding: '25px',
+              borderRadius: '12px',
+              marginBottom: '30px'
+            }}>
+              <h3 style={{ color: '#f9fafb', marginBottom: '15px' }}>Viaje Actual</h3>
+              <div style={{
+                backgroundColor: '#374151',
+                padding: '20px',
+                borderRadius: '8px'
+              }}>
+                <h4 style={{ margin: '0 0 10px 0', color: '#10b981' }}>
+                  {currentTrip.name}
+                </h4>
+                <p style={{ margin: '5px 0', color: '#d1d5db' }}>
+                  Destino: {currentTrip.destination.name}, {currentTrip.destination.country}
+                </p>
+                <p style={{ margin: '5px 0', color: '#d1d5db' }}>
+                  Fechas: {formatDate(currentTrip.dates.startDate)} - {formatDate(currentTrip.dates.endDate)}
+                </p>
+                <p style={{ margin: '5px 0', color: '#d1d5db' }}>
+                  Presupuesto: {formatCurrency(currentTrip.budget.total)}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Recent Trips */}
           <div style={{
             backgroundColor: '#1f2937',
-            padding: '30px',
+            padding: '25px',
             borderRadius: '12px'
           }}>
-            <h2 style={{ color: '#f9fafb', marginBottom: '20px' }}>Actividad Reciente</h2>
-            
+            <h3 style={{ color: '#f9fafb', marginBottom: '20px' }}>Viajes Recientes</h3>
             {trips.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                {trips.slice(-3).reverse().map((trip) => (
+                {trips.slice(-3).reverse().map((trip: Trip) => (
                   <div 
                     key={trip.id}
                     style={{
                       backgroundColor: '#374151',
-                      padding: '20px',
+                      padding: '15px',
                       borderRadius: '8px',
                       display: 'flex',
                       justifyContent: 'space-between',
@@ -226,151 +243,129 @@ const Dashboard: React.FC = () => {
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#f9fafb' }}>
+                      <h4 style={{ margin: '0 0 5px 0', color: '#f9fafb' }}>
                         {trip.name}
-                      </div>
-                      <div style={{ color: '#9ca3af', fontSize: '14px' }}>
-                        {new Date(trip.createdAt).toLocaleDateString('es-ES')}
-                      </div>
+                      </h4>
+                      <p style={{ margin: '0', fontSize: '14px', color: '#9ca3af' }}>
+                        {trip.destination.name} • {getStatusText(trip.status)}
+                      </p>
                     </div>
                     <div style={{
-                      backgroundColor: '#059669',
-                      color: 'white',
-                      padding: '5px 15px',
-                      borderRadius: '20px',
+                      padding: '4px 12px',
+                      borderRadius: '12px',
+                      backgroundColor: getStatusColor(trip.status),
                       fontSize: '12px',
                       fontWeight: 'bold'
                     }}>
-                      {trip.status}
+                      {formatCurrency(trip.budget.total)}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', color: '#9ca3af', padding: '40px' }}>
-                <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🗺️</div>
-                <p>No tienes viajes planificados aún</p>
-                <p>Comienza buscando tu próximo destino</p>
+              <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>
+                <p>No tienes viajes registrados aún</p>
+                <p>¡Comienza planificando tu próxima aventura!</p>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Search Section */}
+      {/* Quick Search Section */}
       {activeSection === 'search' && (
         <div style={{
           backgroundColor: '#1f2937',
           padding: '30px',
           borderRadius: '12px'
         }}>
-          <h2 style={{ color: '#f9fafb', marginBottom: '20px' }}>Explorar Destinos</h2>
+          <h3 style={{ color: '#f9fafb', marginBottom: '20px' }}>Búsqueda Rápida de Destinos</h3>
           
           <input
             type="text"
-            value={searchQuery}
+            placeholder="Buscar destinos..."
             onChange={(e) => searchDestinations(e.target.value)}
-            placeholder="¿A dónde quieres viajar?"
             style={{
               width: '100%',
-              padding: '15px 20px',
-              fontSize: '18px',
-              borderRadius: '12px',
-              border: '1px solid #374151',
+              padding: '15px',
+              fontSize: '16px',
+              borderRadius: '8px',
+              border: '1px solid #4b5563',
               backgroundColor: '#374151',
               color: 'white',
-              marginBottom: '30px',
+              marginBottom: '20px',
               boxSizing: 'border-box'
             }}
           />
 
-          {isSearching && (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🔄</div>
-              <p>Buscando destinos increíbles...</p>
-            </div>
-          )}
-
           {searchResults.length > 0 && (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
               gap: '20px'
             }}>
-              {searchResults.map(destination => (
+              {searchResults.map((destination: Destination) => (
                 <div
                   key={destination.id}
                   style={{
                     backgroundColor: '#374151',
-                    padding: '25px',
-                    borderRadius: '12px',
-                    border: '1px solid #4b5563'
+                    padding: '20px',
+                    borderRadius: '8px'
                   }}
                 >
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
+                  <h4 style={{ margin: '0 0 10px 0', color: '#f9fafb' }}>
+                    {destination.name}, {destination.country}
+                  </h4>
+                  <p style={{ margin: '0 0 15px 0', fontSize: '14px', color: '#d1d5db' }}>
+                    {destination.description}
+                  </p>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
                     marginBottom: '15px'
                   }}>
-                    <div>
-                      <h3 style={{ margin: '0 0 5px 0', color: '#f9fafb' }}>
-                        {destination.name}, {destination.country}
-                      </h3>
-                      <div style={{ color: '#9ca3af', fontSize: '14px' }}>
-                        {destination.popularityScore}/10
-                      </div>
-                    </div>
+                    <span style={{ color: '#10b981', fontWeight: 'bold' }}>
+                      {formatCurrency(destination.averagePrice)}/día
+                    </span>
+                    <span style={{ color: '#fbbf24' }}>
+                      ⭐ {destination.popularityScore}/10
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      onClick={() => startTripPlanning(destination)}
+                      style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                      }}
+                    >
+                      Planificar
+                    </button>
                     <button
                       onClick={() => isFavorite(destination.id) 
                         ? removeFromFavorites(destination.id) 
                         : addToFavorites(destination)
                       }
                       style={{
-                        backgroundColor: 'transparent',
+                        padding: '8px 12px',
+                        backgroundColor: isFavorite(destination.id) ? '#ef4444' : '#7c3aed',
+                        color: 'white',
                         border: 'none',
-                        fontSize: '24px',
-                        cursor: 'pointer'
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '14px'
                       }}
                     >
-                      {isFavorite(destination.id) ? '❤️' : '🤍'}
+                      {isFavorite(destination.id) ? '💔' : '❤️'}
                     </button>
                   </div>
-
-                  <p style={{ color: '#d1d5db', marginBottom: '15px', lineHeight: '1.5' }}>
-                    {destination.description}
-                  </p>
-
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '20px'
-                  }}>
-                    <div style={{ color: '#10b981', fontSize: '18px', fontWeight: 'bold' }}>
-                      {formatCurrency(destination.averagePrice)}/día
-                    </div>
-                    <div style={{ color: '#9ca3af', fontSize: '14px' }}>
-                      {destination.weatherInfo.averageTemp}°C
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => startTripPlanning(destination)}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      backgroundColor: '#3b82f6',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Planificar Viaje
-                  </button>
                 </div>
               ))}
             </div>
@@ -378,50 +373,31 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Trips Section */}
+      {/* Trips Management Section */}
       {activeSection === 'trips' && (
         <div style={{
           backgroundColor: '#1f2937',
           padding: '30px',
           borderRadius: '12px'
         }}>
-          <h2 style={{ color: '#f9fafb', marginBottom: '20px' }}>Mis Viajes ({trips.length})</h2>
+          <h3 style={{ color: '#f9fafb', marginBottom: '20px' }}>
+            Gestión de Viajes ({trips.length})
+          </h3>
           
-          {trips.length === 0 ? (
-            <div style={{ textAlign: 'center', color: '#9ca3af', padding: '60px 20px' }}>
-              <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🧳</div>
-              <h3 style={{ color: '#d1d5db' }}>No tienes viajes planificados</h3>
-              <p>Explora destinos y comienza a planificar tu próxima aventura</p>
-              <button
-                onClick={() => setActiveSection('search')}
-                style={{
-                  marginTop: '20px',
-                  padding: '12px 24px',
-                  backgroundColor: '#3b82f6',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  cursor: 'pointer'
-                }}
-              >
-                Buscar Destinos
-              </button>
-            </div>
-          ) : (
+          {trips.length > 0 ? (
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
               gap: '20px'
             }}>
-              {trips.map(trip => (
+              {trips.map((trip: Trip) => (
                 <div
                   key={trip.id}
                   style={{
                     backgroundColor: '#374151',
-                    padding: '25px',
-                    borderRadius: '12px',
-                    border: '1px solid #4b5563'
+                    padding: '20px',
+                    borderRadius: '8px',
+                    border: `2px solid ${getStatusColor(trip.status)}`
                   }}
                 >
                   <div style={{
@@ -430,38 +406,78 @@ const Dashboard: React.FC = () => {
                     alignItems: 'flex-start',
                     marginBottom: '15px'
                   }}>
-                    <h3 style={{ margin: '0', color: '#f9fafb' }}>
+                    <h4 style={{ margin: '0', color: '#f9fafb' }}>
                       {trip.name}
-                    </h3>
+                    </h4>
                     <div style={{
-                      backgroundColor: '#059669',
-                      color: 'white',
-                      padding: '4px 12px',
-                      borderRadius: '20px',
-                      fontSize: '12px',
-                      fontWeight: 'bold'
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      backgroundColor: getStatusColor(trip.status),
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      color: 'white'
                     }}>
-                      {trip.status}
+                      {getStatusText(trip.status)}
                     </div>
                   </div>
-
-                  <div style={{ color: '#d1d5db', marginBottom: '15px' }}>
-                    <p style={{ margin: '5px 0' }}>
-                      <strong>{trip.destination.name}</strong>, {trip.destination.country}
-                    </p>
-                    <p style={{ margin: '5px 0' }}>
-                      {trip.travelers.adults} adultos
-                    </p>
-                    <p style={{ margin: '5px 0' }}>
-                      Presupuesto: {formatCurrency(trip.budget.total)}
-                    </p>
-                  </div>
-
-                  <div style={{ color: '#9ca3af', fontSize: '12px' }}>
-                    Creado: {new Date(trip.createdAt).toLocaleDateString('es-ES')}
+                  
+                  <p style={{ margin: '5px 0', color: '#d1d5db', fontSize: '14px' }}>
+                    📍 {trip.destination.name}, {trip.destination.country}
+                  </p>
+                  <p style={{ margin: '5px 0', color: '#d1d5db', fontSize: '14px' }}>
+                    📅 {formatDate(trip.dates.startDate)} - {formatDate(trip.dates.endDate)}
+                  </p>
+                  <p style={{ margin: '5px 0', color: '#d1d5db', fontSize: '14px' }}>
+                    💰 {formatCurrency(trip.budget.total)}
+                  </p>
+                  
+                  <div style={{
+                    display: 'flex',
+                    gap: '8px',
+                    marginTop: '15px'
+                  }}>
+                    <button
+                      onClick={() => editTrip(trip)}
+                      style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      ✏️ Editar
+                    </button>
+                    <button
+                      onClick={() => deleteTrip(trip.id)}
+                      style={{
+                        padding: '8px 12px',
+                        backgroundColor: '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      🗑️ Eliminar
+                    </button>
                   </div>
                 </div>
               ))}
+            </div>
+          ) : (
+            <div style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              color: '#9ca3af'
+            }}>
+              <div style={{ fontSize: '4rem', marginBottom: '20px' }}>✈️</div>
+              <h4 style={{ marginBottom: '10px' }}>No tienes viajes registrados</h4>
+              <p>¡Comienza a planificar tu primera aventura!</p>
             </div>
           )}
         </div>
