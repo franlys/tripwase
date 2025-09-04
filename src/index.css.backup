@@ -1,0 +1,31 @@
+﻿/* TRIPWASE - CSS PROFESIONAL */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --tripwase-orange: #FC6A03;
+  --tripwase-blue: #284eee;
+  --gradient-hero: linear-gradient(135deg, #FC6A03, #284eee);
+  --gradient-vacation: linear-gradient(120deg, #FFF7ED 0%, #EFF6FF 100%);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--gradient-vacation);
+  color: #374151;
+}
+
+.App {
+  background: var(--gradient-vacation) !important;
+  min-height: 100vh;
+}
+
+.planner-layout {
+  background: var(--gradient-vacation);
+  min-height: 100vh;
+}

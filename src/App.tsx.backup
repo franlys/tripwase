@@ -1,19 +1,146 @@
-import React from 'react';
-import { AuthProvider } from './contexts/AuthContext';
-import { TripProvider } from './contexts/TripContext';
-import Dashboard from './components/Dashboard';
+﻿// src/App.tsx
+import React, { useState } from 'react';
 import './App.css';
+import { Globe, LogOut } from './components/SimpleIcons';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { FavoritesProvider } from './contexts/FavoritesContext';
+import { TripProvider } from './contexts/TripContext';
+import TripGenerator from './components/trip/TripGenerator';
+import PlanComparison from './components/trip/PlanComparison';
+import ExplorePage from './components/ui/ExplorePage';
+import PlanDetailsModal from './components/modals/PlanDetailsModal';
+import { SimplePlan } from './utils/multiplePlanGenerator';
 
-function App() {
+type ViewType = 'explore' | 'trip' | 'comparison';
+
+const AppContent: React.FC = () => {
+  const [currentView, setCurrentView] = useState<ViewType>('explore');
+  const [generatedPlans, setGeneratedPlans] = useState<SimplePlan[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<SimplePlan | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const { user, logout } = useAuth();
+
+  const handleShowPlans = (plans: SimplePlan[]) => {
+    setGeneratedPlans(plans);
+    setCurrentView('comparison');
+  };
+
+  const handleSelectPlan = (plan: SimplePlan) => {
+    setSelectedPlan(plan);
+    setShowDetailsModal(true);
+  };
+
+  const convertPlanToTrip = (plan: SimplePlan) => ({
+    id: plan.id,
+    name: plan.name,
+    destination: { name: plan.accommodation.name, country: 'Destino' },
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date(Date.now() + plan.duration * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    travelers: { adults: 2, children: 0 },
+    currency: plan.currency,
+    budget: { total: plan.totalCost },
+    interests: []
+  });
+
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6' }}>
+      <header style={{
+        backgroundColor: '#1e293b', padding: '16px 24px',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+             onClick={() => setCurrentView('explore')}>
+          <Globe className="w-8 h-8" />
+          <h1 style={{ color: 'white', margin: 0, fontSize: '24px', fontWeight: 'bold' }}>TripWase</h1>
+        </div>
+        
+        {user && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <span style={{ color: 'white' }}>Hola, {user.name}!</span>
+            <button onClick={logout} style={{
+              padding: '8px 16px', backgroundColor: '#374151', color: 'white',
+              border: 'none', borderRadius: '6px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '8px'
+            }}>
+              <LogOut className="w-4 h-4" />
+              Cerrar sesión
+            </button>
+          </div>
+        )}
+      </header>
+
+      {currentView !== 'explore' && (
+        <nav style={{ backgroundColor: 'white', padding: '12px 24px', borderBottom: '1px solid #e5e7eb' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+            <button onClick={() => setCurrentView('explore')} style={{
+              background: 'none', border: 'none', color: '#3b82f6',
+              cursor: 'pointer', textDecoration: 'underline'
+            }}>Explorar</button>
+            {(currentView === 'trip' || currentView === 'comparison') && (
+              <>
+                <span style={{ color: '#6b7280' }}>?</span>
+                <button onClick={() => setCurrentView('trip')} style={{
+                  background: 'none', border: 'none',
+                  color: currentView === 'trip' ? '#1f2937' : '#3b82f6',
+                  cursor: currentView === 'trip' ? 'default' : 'pointer',
+                  textDecoration: currentView === 'trip' ? 'none' : 'underline'
+                }}>Planificar Viaje</button>
+              </>
+            )}
+            {currentView === 'comparison' && (
+              <>
+                <span style={{ color: '#6b7280' }}>?</span>
+                <span style={{ color: '#1f2937' }}>Comparar Planes</span>
+              </>
+            )}
+          </div>
+        </nav>
+      )}
+
+      <main>
+        {currentView === 'explore' && (
+          <ExplorePage onNavigateToPlanner={() => setCurrentView('trip')} />
+        )}
+        
+        {currentView === 'trip' && (
+          <TripGenerator 
+            onBackToExplore={() => setCurrentView('explore')}
+            onShowPlans={handleShowPlans}
+          />
+        )}
+        
+        {currentView === 'comparison' && (
+          <PlanComparison
+            plans={generatedPlans}
+            onSelectPlan={handleSelectPlan}
+            onBack={() => setCurrentView('trip')}
+          />
+        )}
+      </main>
+
+      {selectedPlan && (
+        <PlanDetailsModal
+          isOpen={showDetailsModal}
+          onClose={() => setShowDetailsModal(false)}
+          trip={convertPlanToTrip(selectedPlan)}
+          onSaveTrip={() => { setShowDetailsModal(false); alert('¡Viaje guardado!'); }}
+          onBookTrip={() => { setShowDetailsModal(false); alert('¡Viaje reservado!'); }}
+        />
+      )}
+    </div>
+  );
+};
+
+const App: React.FC = () => {
   return (
     <AuthProvider>
       <TripProvider>
-        <div className="App">
-          <Dashboard />
-        </div>
+        <FavoritesProvider>
+          <AppContent />
+        </FavoritesProvider>
       </TripProvider>
     </AuthProvider>
   );
-}
+};
 
 export default App;

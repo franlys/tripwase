@@ -8,3 +8,20 @@
 [33m619f807[m Add useErrorBoundary hook with global error handling and recovery mechanisms
 [33m326e375[m Add useAsync hook with retry, timeout, and error handling functionality
 [33m9fdc9e7[m Add useDebounce hook with optimization testing component
+warning: in the working copy of 'package-lock.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/App.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/App.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/App.tsx.backup', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/modals/OriginModal.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/trip/TripGenerator.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/index.css', LF will be replaced by CRLF the next time Git touches it
+package-lock.json
+package.json
+src/App.css
+src/App.tsx
+src/App.tsx.backup
+src/components/modals/OriginModal.tsx
+src/components/trip/TripGenerator.tsx
+src/components/ui/ExplorePage.tsx
+src/index.css
