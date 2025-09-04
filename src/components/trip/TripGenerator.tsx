@@ -1,173 +1,374 @@
 // src/components/trip/TripGenerator.tsx
 import React, { useState } from 'react';
 import { ArrowLeft, MapPin, Calendar, Users, DollarSign, Globe } from 'lucide-react';
-import { TripFormData, OriginData, SelectedLocation } from '../../types';
 import { OriginModal, FreeMapModal } from '../modals';
+import { generateThreePlans, SimplePlan, PlanInput } from '../../utils/multiplePlanGenerator';
 
 interface TripGeneratorProps {
   onBackToExplore: () => void;
+  onShowPlans: (plans: SimplePlan[]) => void;
 }
 
-const TripGenerator: React.FC<TripGeneratorProps> = ({ onBackToExplore }) => {
-  const [formData, setFormData] = useState<TripFormData>({
+const TripGenerator: React.FC<TripGeneratorProps> = ({ onBackToExplore, onShowPlans }) => {
+  const [formData, setFormData] = useState({
     destination: '',
     startDate: '',
     endDate: '',
     travelers: 2,
-    budget: 100000,
-    currency: 'DOP',
-    travelMode: 'auto'
+    budget: 2000,
+    currency: 'EUR',
+    interests: [] as string[]
   });
 
-  const [origin, setOrigin] = useState<OriginData | null>(null);
+  const [origin, setOrigin] = useState<{ country: string; city: string } | null>(null);
   const [showOriginModal, setShowOriginModal] = useState(true);
   const [showMap, setShowMap] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<SelectedLocation | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleLocationSelect = (locationName: string, coordinates: { lat: number; lng: number }) => {
-    setSelectedLocation({ name: locationName, coordinates });
-    setFormData({ ...formData, destination: locationName });
-  };
+  const destinationOptions = [
+    'España', 'Francia', 'Italia', 'Alemania', 'Reino Unido',
+    'Estados Unidos', 'Japón', 'Tailandia', 'México', 'Brasil'
+  ];
 
-  const handleOriginConfirm = (originData: OriginData) => {
-    setOrigin(originData);
+  const interestOptions = [
+    'Historia', 'Arte', 'Gastronomía', 'Naturaleza', 'Aventura',
+    'Playas', 'Museos', 'Arquitectura', 'Vida nocturna', 'Compras'
+  ];
+
+  const handleOriginConfirm = (originData: any) => {
+    setOrigin({
+      country: originData.country || 'España',
+      city: originData.city || 'Madrid'
+    });
     setShowOriginModal(false);
   };
 
+  const handleLocationSelect = (locationName: string, coordinates: any) => {
+    setFormData(prev => ({ ...prev, destination: locationName }));
+    setShowMap(false);
+  };
+
+  const handleInterestToggle = (interest: string) => {
+    setFormData(prev => ({
+      ...prev,
+      interests: prev.interests.includes(interest)
+        ? prev.interests.filter(i => i !== interest)
+        : [...prev.interests, interest]
+    }));
+  };
+
+  const handleGeneratePlans = async () => {
+    if (!origin || !formData.destination || !formData.startDate || !formData.endDate) {
+      alert('Por favor completa todos los campos requeridos');
+      return;
+    }
+
+    setIsGenerating(true);
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const planInput: PlanInput = {
+        destination: formData.destination,
+        origin: `${origin.city}, ${origin.country}`,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        travelers: formData.travelers,
+        budget: formData.budget,
+        currency: formData.currency,
+        interests: formData.interests
+      };
+
+      const plans = generateThreePlans(planInput);
+      onShowPlans(plans);
+
+    } catch (error) {
+      console.error('Error generando planes:', error);
+      alert('Error al generar los planes. Por favor intenta de nuevo.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const isFormValid = origin && formData.destination && formData.startDate && formData.endDate;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <button
-            onClick={onBackToExplore}
-            className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      padding: '20px'
+    }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ marginBottom: '30px' }}>
+          <button onClick={onBackToExplore} style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '12px 20px', backgroundColor: 'rgba(255,255,255,0.1)',
+            color: 'white', border: 'none', borderRadius: '12px',
+            cursor: 'pointer', marginBottom: '20px'
+          }}>
+            <ArrowLeft style={{ width: '16px', height: '16px' }} />
             Volver a Explorar
           </button>
+          <h1 style={{ 
+            color: 'white', margin: 0, fontSize: '32px', 
+            fontWeight: 'bold', textAlign: 'center'
+          }}>
+            Planificador de Viajes Inteligente
+          </h1>
+          <p style={{ 
+            color: 'rgba(255,255,255,0.8)', margin: '8px 0 0 0', 
+            textAlign: 'center', fontSize: '16px'
+          }}>
+            Generaremos 3 opciones personalizadas para tu viaje perfecto
+          </p>
         </div>
 
-        <OriginModal isOpen={showOriginModal} onConfirm={handleOriginConfirm} />
-        
-        <FreeMapModal
-          isOpen={showMap}
-          onClose={() => setShowMap(false)}
-          onLocationSelect={handleLocationSelect}
-        />
+        <div style={{
+          backgroundColor: 'white', borderRadius: '20px',
+          padding: '32px', boxShadow: '0 25px 50px rgba(0,0,0,0.2)'
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+            <div>
+              <label style={{ 
+                display: 'flex', alignItems: 'center', gap: '8px',
+                marginBottom: '8px', fontWeight: '600', color: '#374151'
+              }}>
+                <MapPin style={{ width: '16px', height: '16px', color: '#3b82f6' }} />
+                Origen
+              </label>
+              <div style={{
+                padding: '12px 16px', border: '2px solid #e5e7eb',
+                borderRadius: '12px', backgroundColor: '#f9fafb',
+                color: '#374151', fontWeight: '500'
+              }}>
+                {origin ? `${origin.city}, ${origin.country}` : 'Seleccionando...'}
+              </div>
+            </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-8 text-center">
-            Planificador de Viajes Inteligente
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="space-y-2">
-              <label className="flex items-center text-sm font-medium text-gray-700">
-                <MapPin className="w-4 h-4 mr-2 text-blue-600" />
+            <div>
+              <label style={{ 
+                display: 'flex', alignItems: 'center', gap: '8px',
+                marginBottom: '8px', fontWeight: '600', color: '#374151'
+              }}>
+                <Globe style={{ width: '16px', height: '16px', color: '#10b981' }} />
                 Destino
               </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Selecciona cualquier lugar del mundo"
+              <div style={{ position: 'relative' }}>
+                <select
                   value={formData.destination}
-                  onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
-                  className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                  onChange={(e) => setFormData(prev => ({ ...prev, destination: e.target.value }))}
                   disabled={!origin}
-                />
+                  style={{
+                    width: '100%', padding: '12px 16px', border: '2px solid #e5e7eb',
+                    borderRadius: '12px', fontSize: '14px', cursor: 'pointer',
+                    opacity: !origin ? 0.5 : 1
+                  }}
+                >
+                  <option value="">Seleccionar destino</option>
+                  {destinationOptions.map(dest => (
+                    <option key={dest} value={dest}>{dest}</option>
+                  ))}
+                </select>
                 <button
                   type="button"
                   onClick={() => setShowMap(true)}
                   disabled={!origin}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 transition-colors disabled:opacity-50"
-                  title="Abrir mapa mundial interactivo"
+                  style={{
+                    position: 'absolute', right: '12px', top: '50%',
+                    transform: 'translateY(-50%)', background: 'none',
+                    border: 'none', color: '#3b82f6', cursor: 'pointer',
+                    opacity: !origin ? 0.5 : 1
+                  }}
+                  title="Buscar en mapa"
                 >
-                  <Globe className="w-5 h-5" />
+                  <Globe style={{ width: '20px', height: '20px' }} />
                 </button>
               </div>
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <label className="flex items-center text-sm font-medium text-gray-700">
-                <Calendar className="w-4 h-4 mr-2 text-green-600" />
-                Fecha de salida
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+            <div>
+              <label style={{ 
+                display: 'flex', alignItems: 'center', gap: '8px',
+                marginBottom: '8px', fontWeight: '600', color: '#374151'
+              }}>
+                <Calendar style={{ width: '16px', height: '16px', color: '#10b981' }} />
+                Fecha de inicio
               </label>
               <input
                 type="date"
                 value={formData.startDate}
-                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
                 disabled={!origin}
+                style={{
+                  width: '100%', padding: '12px 16px', border: '2px solid #e5e7eb',
+                  borderRadius: '12px', fontSize: '14px',
+                  opacity: !origin ? 0.5 : 1
+                }}
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="flex items-center text-sm font-medium text-gray-700">
-                <Calendar className="w-4 h-4 mr-2 text-red-600" />
-                Fecha de regreso
+            <div>
+              <label style={{ 
+                display: 'flex', alignItems: 'center', gap: '8px',
+                marginBottom: '8px', fontWeight: '600', color: '#374151'
+              }}>
+                <Calendar style={{ width: '16px', height: '16px', color: '#ef4444' }} />
+                Fecha de fin
               </label>
               <input
                 type="date"
                 value={formData.endDate}
-                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
                 disabled={!origin}
+                style={{
+                  width: '100%', padding: '12px 16px', border: '2px solid #e5e7eb',
+                  borderRadius: '12px', fontSize: '14px',
+                  opacity: !origin ? 0.5 : 1
+                }}
               />
-            </div>
-
-            <div className="space-y-2">
-              <label className="flex items-center text-sm font-medium text-gray-700">
-                <Users className="w-4 h-4 mr-2 text-purple-600" />
-                Viajeros
-              </label>
-              <select
-                value={formData.travelers}
-                onChange={(e) => setFormData({ ...formData, travelers: parseInt(e.target.value) })}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                disabled={!origin}
-              >
-                {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                  <option key={num} value={num}>{num} {num === 1 ? 'persona' : 'personas'}</option>
-                ))}
-              </select>
             </div>
           </div>
 
-          <div className="mt-6 space-y-2">
-            <label className="flex items-center text-sm font-medium text-gray-700">
-              <DollarSign className="w-4 h-4 mr-2 text-yellow-600" />
-              Presupuesto total ({formData.currency})
-            </label>
-            <div className="relative">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+            <div>
+              <label style={{ 
+                display: 'flex', alignItems: 'center', gap: '8px',
+                marginBottom: '8px', fontWeight: '600', color: '#374151'
+              }}>
+                <Users style={{ width: '16px', height: '16px', color: '#8b5cf6' }} />
+                Viajeros
+              </label>
               <input
-                type="range"
-                min={formData.currency === 'DOP' ? 50000 : 1000}
-                max={formData.currency === 'DOP' ? 500000 : 10000}
-                step={formData.currency === 'DOP' ? 5000 : 100}
-                value={formData.budget}
-                onChange={(e) => setFormData({ ...formData, budget: parseInt(e.target.value) })}
-                className="w-full h-2 bg-gradient-to-r from-blue-200 to-purple-200 rounded-lg appearance-none cursor-pointer"
+                type="number"
+                min="1"
+                max="10"
+                value={formData.travelers}
+                onChange={(e) => setFormData(prev => ({ ...prev, travelers: parseInt(e.target.value) || 1 }))}
                 disabled={!origin}
+                style={{
+                  width: '100%', padding: '12px 16px', border: '2px solid #e5e7eb',
+                  borderRadius: '12px', fontSize: '14px',
+                  opacity: !origin ? 0.5 : 1
+                }}
               />
-              <div className="mt-2 text-center">
-                <span className="font-bold text-lg">
-                  {formData.currency === 'DOP' ? 'RD$' : '$'}{formData.budget.toLocaleString()}
-                </span>
+            </div>
+
+            <div>
+              <label style={{ 
+                display: 'flex', alignItems: 'center', gap: '8px',
+                marginBottom: '8px', fontWeight: '600', color: '#374151'
+              }}>
+                <DollarSign style={{ width: '16px', height: '16px', color: '#f59e0b' }} />
+                Presupuesto base
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="number"
+                  min="500"
+                  value={formData.budget}
+                  onChange={(e) => setFormData(prev => ({ ...prev, budget: parseInt(e.target.value) || 500 }))}
+                  disabled={!origin}
+                  style={{
+                    flex: 1, padding: '12px 16px', border: '2px solid #e5e7eb',
+                    borderRadius: '12px', fontSize: '14px',
+                    opacity: !origin ? 0.5 : 1
+                  }}
+                />
+                <select
+                  value={formData.currency}
+                  onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
+                  disabled={!origin}
+                  style={{
+                    padding: '12px 16px', border: '2px solid #e5e7eb',
+                    borderRadius: '12px', fontSize: '14px',
+                    opacity: !origin ? 0.5 : 1
+                  }}
+                >
+                  <option value="EUR">EUR</option>
+                  <option value="USD">USD</option>
+                  <option value="DOP">DOP</option>
+                  <option value="GBP">GBP</option>
+                </select>
               </div>
             </div>
           </div>
 
+          <div style={{ marginBottom: '32px' }}>
+            <label style={{ 
+              display: 'block', marginBottom: '12px', 
+              fontWeight: '600', color: '#374151'
+            }}>
+              Intereses (opcional)
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {interestOptions.map(interest => {
+                const isSelected = formData.interests.includes(interest);
+                return (
+                  <button
+                    key={interest}
+                    type="button"
+                    onClick={() => handleInterestToggle(interest)}
+                    disabled={!origin}
+                    style={{
+                      padding: '8px 16px', borderRadius: '20px',
+                      border: '2px solid #e5e7eb',
+                      backgroundColor: isSelected ? '#3b82f6' : 'white',
+                      color: isSelected ? 'white' : '#374151',
+                      cursor: 'pointer', fontSize: '14px', fontWeight: '500',
+                      transition: 'all 0.2s ease',
+                      opacity: !origin ? 0.5 : 1
+                    }}
+                  >
+                    {interest}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <button
-            disabled={!origin || !formData.destination || !formData.startDate || !formData.endDate}
-            className="w-full mt-8 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 shadow-lg"
+            onClick={handleGeneratePlans}
+            disabled={!isFormValid || isGenerating}
+            style={{
+              width: '100%', padding: '16px 32px', borderRadius: '16px',
+              border: 'none', 
+              background: isFormValid && !isGenerating
+                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                : '#e5e7eb',
+              color: isFormValid && !isGenerating ? 'white' : '#9ca3af',
+              fontSize: '18px', fontWeight: 'bold',
+              cursor: isFormValid && !isGenerating ? 'pointer' : 'not-allowed',
+              transition: 'all 0.3s ease'
+            }}
           >
-            Generar planes de viaje inteligentes
+            {isGenerating ? 'Generando planes increíbles...' : 'Generar 3 Opciones de Viaje'}
           </button>
+
+          {!isFormValid && (
+            <p style={{ 
+              textAlign: 'center', color: '#6b7280', 
+              fontSize: '14px', margin: '12px 0 0 0'
+            }}>
+              Completa todos los campos para generar tus planes personalizados
+            </p>
+          )}
         </div>
       </div>
+
+      <OriginModal
+        isOpen={showOriginModal}
+        onConfirm={handleOriginConfirm}
+      />
+
+      <FreeMapModal
+        isOpen={showMap}
+        onClose={() => setShowMap(false)}
+        onLocationSelect={handleLocationSelect}
+      />
     </div>
   );
 };
 
 export default TripGenerator;
-
