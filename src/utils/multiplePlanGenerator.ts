@@ -28,15 +28,20 @@ export interface SimplePlan {
 
 export type TripPlanOption = SimplePlan;
 
+// Interfaz corregida para coincidir con TripGenerator
 export interface PlanInput {
   destination: string;
-  origin: string;
   startDate: string;
   endDate: string;
   travelers: number;
   budget: number;
   currency: string;
   interests: string[];
+  origin: {
+    country: string;
+    city: string;
+    flag?: string;
+  };
 }
 
 export const generateThreePlans = (input: PlanInput): SimplePlan[] => {
@@ -71,7 +76,7 @@ const createEconomicPlan = (input: PlanInput, duration: number): SimplePlan => {
   const accommodationPerNight = 35;
   const foodPerDay = 25;
   const activitiesTotal = 150;
-  const transportation = 300;
+  const transportation = calculateTransportationCost(input.origin, input.destination, 'economic');
 
   const accommodation = accommodationPerNight * duration;
   const food = foodPerDay * duration * input.travelers;
@@ -82,24 +87,24 @@ const createEconomicPlan = (input: PlanInput, duration: number): SimplePlan => {
     id: `economic_${Date.now()}`,
     name: 'Plan Aventurero',
     tier: 'economic',
-    description: 'Perfecto para viajeros que buscan aventura sin gastar de m�s. Alojamiento c�modo y experiencias aut�nticas.',
+    description: 'Perfecto para viajeros que buscan aventura sin gastar de más. Alojamiento cómodo y experiencias auténticas.',
     totalCost: total,
     currency: input.currency,
     duration,
     savings: 0,
     highlights: [
       'Hostales y guesthouses bien ubicados',
-      'Transporte p�blico y econ�mico',
-      'Comida local aut�ntica',
+      'Transporte público y económico',
+      'Comida local auténtica',
       'Actividades gratuitas y low-cost',
-      'M�xima flexibilidad'
+      'Máxima flexibilidad'
     ],
     accommodation: {
       name: `Hostal Central ${input.destination}`,
       type: 'Hostal',
       pricePerNight: accommodationPerNight,
       stars: 2,
-      location: 'Centro hist�rico'
+      location: 'Centro histórico'
     },
     breakdown: {
       accommodation,
@@ -115,7 +120,7 @@ const createMediumPlan = (input: PlanInput, duration: number): SimplePlan => {
   const accommodationPerNight = 85;
   const foodPerDay = 45;
   const activitiesTotal = 300;
-  const transportation = 500;
+  const transportation = calculateTransportationCost(input.origin, input.destination, 'medium');
 
   const accommodation = accommodationPerNight * duration;
   const food = foodPerDay * duration * input.travelers;
@@ -132,9 +137,9 @@ const createMediumPlan = (input: PlanInput, duration: number): SimplePlan => {
     duration,
     savings: 0,
     highlights: [
-      'Hoteles 3-4 estrellas c�ntricos',
-      'Vuelos directos clase econ�mica',
-      'Restaurantes locales y tur�sticos',
+      'Hoteles 3-4 estrellas céntricos',
+      'Vuelos directos clase económica',
+      'Restaurantes locales y turísticos',
       'Tours principales incluidos',
       'Seguro de viaje completo'
     ],
@@ -143,7 +148,7 @@ const createMediumPlan = (input: PlanInput, duration: number): SimplePlan => {
       type: 'Hotel',
       pricePerNight: accommodationPerNight,
       stars: 3,
-      location: 'Zona tur�stica'
+      location: 'Zona turística'
     },
     breakdown: {
       accommodation,
@@ -159,7 +164,7 @@ const createLuxuryPlan = (input: PlanInput, duration: number): SimplePlan => {
   const accommodationPerNight = 220;
   const foodPerDay = 120;
   const activitiesTotal = 800;
-  const transportation = 1200;
+  const transportation = calculateTransportationCost(input.origin, input.destination, 'luxury');
 
   const accommodation = accommodationPerNight * duration;
   const food = foodPerDay * duration * input.travelers;
@@ -170,7 +175,7 @@ const createLuxuryPlan = (input: PlanInput, duration: number): SimplePlan => {
     id: `luxury_${Date.now()}`,
     name: 'Plan Premium',
     tier: 'luxury',
-    description: 'La experiencia m�s refinada. Hoteles de lujo, gastronom�a excepcional y servicios premium.',
+    description: 'La experiencia más refinada. Hoteles de lujo, gastronomía excepcional y servicios premium.',
     totalCost: total,
     currency: input.currency,
     duration,
@@ -179,7 +184,7 @@ const createLuxuryPlan = (input: PlanInput, duration: number): SimplePlan => {
       'Hoteles 5 estrellas exclusivos',
       'Vuelos clase business',
       'Restaurantes gourmet',
-      'Tours privados con gu�a',
+      'Tours privados con guía',
       'Concierge 24/7'
     ],
     accommodation: {
@@ -187,7 +192,7 @@ const createLuxuryPlan = (input: PlanInput, duration: number): SimplePlan => {
       type: 'Resort de Lujo',
       pricePerNight: accommodationPerNight,
       stars: 5,
-      location: 'Ubicaci�n exclusiva'
+      location: 'Ubicación exclusiva'
     },
     breakdown: {
       accommodation,
@@ -197,4 +202,78 @@ const createLuxuryPlan = (input: PlanInput, duration: number): SimplePlan => {
       total
     }
   };
+};
+
+// Función mejorada para calcular costos de transporte
+const calculateTransportationCost = (
+  origin: { country: string; city: string; flag?: string }, 
+  destination: string, 
+  tier: 'economic' | 'medium' | 'luxury'
+): number => {
+  // Determinar si es viaje internacional o doméstico
+  const isInternational = !destination.toLowerCase().includes(origin.country.toLowerCase());
+  
+  // Costos base según tipo de viaje y tier
+  const costs = {
+    economic: {
+      domestic: 150,
+      international: 400
+    },
+    medium: {
+      domestic: 300,
+      international: 700
+    },
+    luxury: {
+      domestic: 600,
+      international: 1500
+    }
+  };
+
+  return isInternational ? costs[tier].international : costs[tier].domestic;
+};
+
+// Función utilitaria para formatear moneda
+export const formatCurrency = (amount: number, currency: string): string => {
+  const symbols: { [key: string]: string } = {
+    EUR: '€',
+    USD: '$',
+    DOP: 'RD$',
+    GBP: '£'
+  };
+
+  const symbol = symbols[currency] || currency;
+  return `${symbol}${amount.toLocaleString()}`;
+};
+
+// Función para calcular el porcentaje de ahorro
+export const calculateSavingsPercentage = (originalPrice: number, currentPrice: number): number => {
+  if (originalPrice <= 0) return 0;
+  return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+};
+
+// Función para obtener recomendaciones según intereses
+export const getRecommendationsByInterests = (interests: string[]): string[] => {
+  const recommendations: { [key: string]: string[] } = {
+    'playas': ['Snorkel en arrecifes', 'Deportes acuáticos', 'Atardeceres en la costa'],
+    'aventura': ['Senderismo en montañas', 'Deportes extremos', 'Exploración de cuevas'],
+    'vida-nocturna': ['Tours de bares locales', 'Clubes y discotecas', 'Espectáculos nocturnos'],
+    'historia': ['Museos históricos', 'Sitios arqueológicos', 'Tours guiados patrimonio'],
+    'gastronomia': ['Tours culinarios', 'Clases de cocina local', 'Mercados gastronómicos'],
+    'naturaleza': ['Parques nacionales', 'Observación vida silvestre', 'Ecoturismo'],
+    'museos': ['Galerías de arte', 'Museos especializados', 'Exposiciones temporales'],
+    'compras': ['Mercados locales', 'Centros comerciales', 'Tiendas artesanales'],
+    'arquitectura': ['Tours arquitectónicos', 'Edificios históricos', 'Arquitectura moderna'],
+    'bienestar': ['Spas y wellness', 'Yoga y meditación', 'Tratamientos relajantes']
+  };
+
+  const allRecommendations: string[] = [];
+  interests.forEach(interest => {
+    if (recommendations[interest]) {
+      allRecommendations.push(...recommendations[interest]);
+    }
+  });
+
+  // Remover duplicados usando Array.from() para compatibilidad ES5
+  const uniqueRecommendations = Array.from(new Set(allRecommendations));
+  return uniqueRecommendations.slice(0, 5);
 };

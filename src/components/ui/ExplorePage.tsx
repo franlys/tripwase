@@ -1,8 +1,8 @@
-ï»¿// src/components/ui/ExplorePage.tsx
+// src/components/ui/ExplorePage.tsx
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useScrollAnimation } from '../../hooks';
-
+import HomePage from '../homepage/HomePage';
 interface ExplorePageProps {
   onNavigateToPlanner: () => void;
 }
@@ -11,10 +11,10 @@ const ExplorePage: React.FC<ExplorePageProps> = ({ onNavigateToPlanner }) => {
   const [heroRef, heroVisible] = useScrollAnimation();
 
   return (
-    <div className="min-h-screen hero-section">
+    <div className="min-h-screen">
       <section 
         ref={heroRef}
-        className={`relative min-h-screen flex items-center justify-center text-center transition-all duration-1000 ${
+        className={`hero-section relative min-h-screen flex items-center justify-center text-center transition-all duration-1000 ${
           heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'
         }`}
       >
@@ -24,7 +24,7 @@ const ExplorePage: React.FC<ExplorePageProps> = ({ onNavigateToPlanner }) => {
             Explora el Mundo
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed">
-            Descubre destinos increÃ­bles, experiencias Ãºnicas y aventuras inolvidables
+            Descubre destinos increíbles, experiencias únicas y aventuras inolvidables
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
@@ -41,8 +41,10 @@ const ExplorePage: React.FC<ExplorePageProps> = ({ onNavigateToPlanner }) => {
 
         <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
           <ArrowRight className="w-6 h-6 text-white/70 rotate-90" />
-        </div>
+       </div>
       </section>
+      
+      <HomePage onNavigateToPlanner={onNavigateToPlanner} />
     </div>
   );
 };

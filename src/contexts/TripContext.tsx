@@ -173,12 +173,12 @@ const TripProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       }
     };
 
-    executeSearch();
+    // executeSearch(); // Comentado temporalmente para evitar loop
 
     return () => {
       isCancelled = true;
     };
-  }, [debouncedQuery, performSearch, setSearchHistory]);
+  }, [debouncedQuery]);
 
   // FUNCIONES ESTABLES CON useCallback
   const updateSearchFilters = useCallback((newFilters: Partial<SearchFilters>) => {
