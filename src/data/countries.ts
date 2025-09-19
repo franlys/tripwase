@@ -3,7 +3,7 @@ import { CountriesData } from '../types';
 
 export const COUNTRIES_DATA: CountriesData = {
   'DO': {
-    name: 'República Dominicana',
+    name: 'RepÃºblica Dominicana',
     hasInternalFlights: false,
     currency: 'DOP',
     keywords: ['dominican', 'dominicana', 'santo domingo', 'punta cana', 'samana', 'la romana', 'puerto plata', 'santiago']
@@ -21,16 +21,16 @@ export const COUNTRIES_DATA: CountriesData = {
     keywords: ['colombia', 'bogota', 'cartagena', 'medellin', 'cali', 'barranquilla']
   },
   'MX': {
-    name: 'México',
+    name: 'MÃ©xico',
     hasInternalFlights: true,
     currency: 'USD',
     keywords: ['mexico', 'cancun', 'ciudad de mexico', 'guadalajara', 'monterrey']
   },
   'ES': {
-    name: 'España',
+    name: 'EspaÃ±a',
     hasInternalFlights: true,
     currency: 'EUR',
-    keywords: ['spain', 'españa', 'madrid', 'barcelona', 'valencia', 'sevilla']
+    keywords: ['spain', 'espaÃ±a', 'madrid', 'barcelona', 'valencia', 'sevilla']
   },
   'FR': {
     name: 'Francia',
@@ -51,7 +51,7 @@ export const COUNTRIES_DATA: CountriesData = {
     keywords: ['united kingdom', 'uk', 'london', 'manchester', 'birmingham', 'liverpool']
   },
   'NL': {
-    name: 'Países Bajos',
+    name: 'PaÃ­ses Bajos',
     hasInternalFlights: true,
     currency: 'EUR',
     keywords: ['netherlands', 'holland', 'amsterdam', 'rotterdam', 'den haag']

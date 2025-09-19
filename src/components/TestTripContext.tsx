@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTrip } from '../hooks/useTrip';
+import { useTrip } from '../contexts/TripContext'; // ← Importar desde TripContext directamente
 
 const TestTripContext: React.FC = () => {
   const [customBudget, setCustomBudget] = useState<number>(1000);
@@ -38,10 +38,47 @@ const TestTripContext: React.FC = () => {
 
   const handleFilterUpdate = () => {
     updateSearchFilters({
-      budget: { min: 0, max: customBudget, currency: 'EUR' },
+      budget: { min: 0, max: customBudget, currency: 'EUR' }, // ✅ currency ahora es opcional
       dates: { startDate: startDate || null, endDate: endDate || null },
       travelers: { adults, children: 0 }
     });
+  };
+
+  // ✅ Función corregida para guardar el viaje
+  const handleSaveTrip = async () => {
+    if (!currentTrip) {
+      console.error('No hay viaje actual para guardar');
+      return;
+    }
+
+    try {
+      const tripData = {
+        name: currentTrip.name,
+        destination: currentTrip.destination,
+        origin: currentTrip.origin,
+        startDate: currentTrip.startDate,
+        endDate: currentTrip.endDate,
+        duration: getTripDuration() || 1, // ✅ Usar función sin parámetros
+        dates: { // ✅ Agregar propiedad dates requerida
+          startDate: currentTrip.startDate,
+          endDate: currentTrip.endDate
+        },
+        travelers: currentTrip.travelers,
+        currency: currentTrip.currency,
+        budget: currentTrip.budget,
+        interests: currentTrip.interests,
+        selectedPlan: currentTrip.selectedPlan,
+        plan: currentTrip.plan,
+        itinerary: currentTrip.itinerary || [],
+        transport: currentTrip.transport,
+        status: currentTrip.status
+      };
+      
+      await saveTrip(tripData);
+      console.log('✅ Viaje guardado exitosamente');
+    } catch (error) {
+      console.error('❌ Error al guardar el viaje:', error);
+    }
   };
 
   const formatCurrency = (amount: number) => {
@@ -271,8 +308,8 @@ const TestTripContext: React.FC = () => {
                   >
                     <h4>{destination.name}, {destination.country}</h4>
                     <p>{destination.description}</p>
-                    <p>💰 {formatCurrency(destination.averagePrice)}</p>
-                    <p>⭐ {destination.popularityScore}/10</p>
+                    <p>💰 {formatCurrency(destination.averagePrice || 0)}</p>
+                    <p>⭐ {destination.popularityScore || 0}/10</p>
                     <div style={{ display: 'flex', gap: '8px', marginTop: '15px' }}>
                       <button 
                         onClick={() => { 
@@ -292,20 +329,20 @@ const TestTripContext: React.FC = () => {
                         📋 Planificar
                       </button>
                       <button 
-                        onClick={() => isFavorite(destination.id) 
+                        onClick={() => destination.id && isFavorite(destination.id) 
                           ? removeFromFavorites(destination.id) 
                           : addToFavorites(destination)
                         } 
                         style={{ 
                           padding: '8px 12px', 
-                          backgroundColor: isFavorite(destination.id) ? '#dc2626' : '#7c3aed', 
+                          backgroundColor: destination.id && isFavorite(destination.id) ? '#dc2626' : '#7c3aed', 
                           color: 'white', 
                           border: 'none', 
                           borderRadius: '4px',
                           cursor: 'pointer'
                         }}
                       >
-                        {isFavorite(destination.id) ? '💔 Quitar' : '❤️ Favorito'}
+                        {destination.id && isFavorite(destination.id) ? '💔 Quitar' : '❤️ Favorito'}
                       </button>
                     </div>
                   </div>
@@ -337,9 +374,9 @@ const TestTripContext: React.FC = () => {
                     }}
                   >
                     <h5>{destination.name}</h5>
-                    <p>{formatCurrency(destination.averagePrice)}</p>
+                    <p>{formatCurrency(destination.averagePrice || 0)}</p>
                     <button 
-                      onClick={() => removeFromFavorites(destination.id)} 
+                      onClick={() => destination.id && removeFromFavorites(destination.id)} 
                       style={{ 
                         padding: '4px 8px', 
                         backgroundColor: '#dc2626', 
@@ -370,10 +407,10 @@ const TestTripContext: React.FC = () => {
                 borderRadius: '8px' 
               }}>
                 <h3>📋 Planificando: {currentTrip.name}</h3>
-                <p>🌍 Destino: {currentTrip.destination.name}</p>
+                <p>🌍 Destino: {currentTrip.destination.name}, {currentTrip.destination.country}</p>
                 <p>📅 Fechas: {formatDate(currentTrip.dates.startDate)} - {formatDate(currentTrip.dates.endDate)}</p>
                 <p>⏰ Duración: {getTripDuration()} días</p>
-                <p>👥 Viajeros: {currentTrip.travelers.adults} adultos</p>
+                <p>👥 Viajeros: {currentTrip.travelers.adults} adultos{currentTrip.travelers.children > 0 && `, ${currentTrip.travelers.children} niños`}</p>
                 <p>💰 Presupuesto: {formatCurrency(currentTrip.budget.total)}</p>
               </div>
               
@@ -417,8 +454,9 @@ const TestTripContext: React.FC = () => {
                 </select>
               </div>
               
+              {/* ✅ BOTÓN CORREGIDO */}
               <button 
-                onClick={saveTrip} 
+                onClick={handleSaveTrip}
                 style={{ 
                   padding: '10px 20px', 
                   backgroundColor: '#059669', 
@@ -471,12 +509,13 @@ const TestTripContext: React.FC = () => {
                   }}
                 >
                   <h4>{trip.name}</h4>
-                  <p>🌍 Destino: {trip.destination.name}</p>
+                  <p>🌍 Destino: {trip.destination.name}, {trip.destination.country}</p>
                   <p>📊 Estado: {trip.status}</p>
+                  <p>💰 Presupuesto: {formatCurrency(trip.budget.total)}</p>
                   <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
                     <button 
                       onClick={() => { 
-                        editTrip(trip); 
+                        editTrip(trip); // ✅ Ahora pasa el trip completo
                         setActiveTab('planning'); 
                       }} 
                       style={{ 

@@ -1,5 +1,6 @@
-// src/utils/currencyConverter.ts
-import { Currency } from '../types';
+// src/utils/currencyConverter.ts - CORREGIDO
+// ✅ CORRECCIÓN: Definir Currency como string union type en lugar de interface
+type Currency = 'USD' | 'DOP' | 'EUR' | 'GBP';
 
 interface ExchangeRates {
   [key: string]: number;
@@ -31,10 +32,12 @@ export const convertCurrency = (
   const rate = EXCHANGE_RATES[rateKey];
   
   if (!rate) {
+    // Convertir vía USD si no existe tasa directa
     if (fromCurrency !== 'USD' && toCurrency !== 'USD') {
       const toUSD = convertCurrency(amount, fromCurrency, 'USD');
       return convertCurrency(toUSD, 'USD', toCurrency);
     }
+    // Si no se encuentra la tasa, devolver el monto original
     return amount;
   }
   
@@ -42,12 +45,24 @@ export const convertCurrency = (
 };
 
 export const formatCurrency = (amount: number, currency: Currency): string => {
-  const formatter = new Intl.NumberFormat('es-DO', {
+  const currencyConfig = {
+    'USD': { locale: 'en-US', currency: 'USD' },
+    'DOP': { locale: 'es-DO', currency: 'DOP' },
+    'EUR': { locale: 'de-DE', currency: 'EUR' },
+    'GBP': { locale: 'en-GB', currency: 'GBP' }
+  };
+
+  const config = currencyConfig[currency] || currencyConfig['USD'];
+  
+  const formatter = new Intl.NumberFormat(config.locale, {
     style: 'currency',
-    currency: currency === 'DOP' ? 'DOP' : currency,
+    currency: config.currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   });
   
   return formatter.format(amount);
 };
+
+// ✅ EXPORTAR el tipo Currency para uso en otros archivos
+export type { Currency };

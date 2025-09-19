@@ -17,11 +17,11 @@ const PlanComparison: React.FC<PlanComparisonProps> = ({
 
   const getPlanColor = (tier: string) => {
     const colors = {
-      economic: { bg: '#f0f9ff', border: '#0ea5e9', text: '#0369a1', accent: '#38bdf8' },
-      medium: { bg: '#f0fdf4', border: '#22c55e', text: '#15803d', accent: '#4ade80' },
-      luxury: { bg: '#fefce8', border: '#eab308', text: '#a16207', accent: '#facc15' }
+      economico: { bg: '#f0f9ff', border: '#0ea5e9', text: '#0369a1', accent: '#38bdf8' },
+      intermedio: { bg: '#f0fdf4', border: '#22c55e', text: '#15803d', accent: '#4ade80' },
+      premium: { bg: '#fefce8', border: '#eab308', text: '#a16207', accent: '#facc15' }
     };
-    return colors[tier as keyof typeof colors] || colors.medium;
+    return colors[tier as keyof typeof colors] || colors.intermedio;
   };
 
   const formatCurrency = (amount: number, currency: string) => {
@@ -29,7 +29,11 @@ const PlanComparison: React.FC<PlanComparisonProps> = ({
   };
 
   const getTierIcon = (tier: string) => {
-    const icons = { economic: '??', medium: '??', luxury: '??' };
+    const icons = { 
+      economico: '💵', 
+      intermedio: '⭐', 
+      premium: '👑' 
+    };
     return icons[tier as keyof typeof icons];
   };
 
@@ -44,7 +48,7 @@ const PlanComparison: React.FC<PlanComparisonProps> = ({
         <button onClick={onBack} style={{
           padding: '8px 16px', backgroundColor: '#f3f4f6', border: '1px solid #e5e7eb',
           borderRadius: '8px', cursor: 'pointer', marginBottom: '20px'
-        }}>? Volver</button>
+        }}>← Volver</button>
         <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1f2937', margin: '0 0 8px 0' }}>
           Elige tu Plan Perfecto
         </h1>
@@ -73,11 +77,11 @@ const PlanComparison: React.FC<PlanComparisonProps> = ({
                   <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: colors.text }}>
                     {getTierIcon(plan.tier)} {plan.name}
                   </h3>
-                  {plan.tier === 'medium' && (
+                  {plan.tier === 'intermedio' && (
                     <span style={{
                       backgroundColor: colors.accent, color: 'white', padding: '4px 12px',
                       borderRadius: '12px', fontSize: '12px', fontWeight: '600'
-                    }}>M�S POPULAR</span>
+                    }}>MÁS POPULAR</span>
                   )}
                 </div>
                 <p style={{ margin: 0, color: '#6b7280', fontSize: '14px', lineHeight: '1.5' }}>
@@ -89,14 +93,14 @@ const PlanComparison: React.FC<PlanComparisonProps> = ({
                 <div style={{ fontSize: '32px', fontWeight: 'bold', color: colors.text, marginBottom: '4px' }}>
                   {formatCurrency(plan.totalCost, plan.currency)}
                 </div>
-                <div style={{ fontSize: '14px', color: '#6b7280' }}>para {plan.duration} d�as</div>
+                <div style={{ fontSize: '14px', color: '#6b7280' }}>para {plan.duration} días</div>
                 {plan.savings !== 0 && (
                   <div style={{ 
                     fontSize: '12px', 
                     color: plan.savings > 0 ? '#059669' : '#dc2626',
                     marginTop: '4px'
                   }}>
-                    {plan.savings > 0 ? '?? ' : ''}
+                    {plan.savings > 0 ? '💰 ' : ''}
                     {plan.savings > 0 ? 'Ahorras' : 'Gastas'} {formatCurrency(Math.abs(plan.savings), plan.currency)}
                   </div>
                 )}
@@ -108,10 +112,10 @@ const PlanComparison: React.FC<PlanComparisonProps> = ({
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {[
-                    { label: '?? Alojamiento', value: plan.breakdown.accommodation },
-                    { label: '?? Transporte', value: plan.breakdown.transportation },
-                    { label: '??? Comida', value: plan.breakdown.food },
-                    { label: '?? Actividades', value: plan.breakdown.activities }
+                    { label: '🏨 Alojamiento', value: plan.breakdown.accommodation },
+                    { label: '🚗 Transporte', value: plan.breakdown.transportation },
+                    { label: '🍽️ Comida', value: plan.breakdown.food },
+                    { label: '🎯 Actividades', value: plan.breakdown.activities }
                   ].map(item => (
                     <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
                       <span style={{ color: '#6b7280' }}>{item.label}</span>
@@ -145,7 +149,7 @@ const PlanComparison: React.FC<PlanComparisonProps> = ({
                         {plan.accommodation.name}
                       </div>
                       <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                        {'?'.repeat(plan.accommodation.stars)} � {plan.accommodation.location}
+                        {'⭐'.repeat(plan.accommodation.stars)} • {plan.accommodation.location}
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
@@ -164,7 +168,7 @@ const PlanComparison: React.FC<PlanComparisonProps> = ({
                 color: isSelected ? 'white' : colors.text,
                 fontWeight: '600', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s ease'
               }}>
-                {isSelected ? 'Plan Seleccionado ?' : 'Seleccionar Plan'}
+                {isSelected ? 'Plan Seleccionado ✓' : 'Seleccionar Plan'}
               </button>
             </div>
           );
@@ -174,7 +178,7 @@ const PlanComparison: React.FC<PlanComparisonProps> = ({
       {selectedPlanId && (
         <div style={{ textAlign: 'center', padding: '24px', backgroundColor: '#f9fafb', borderRadius: '12px' }}>
           <p style={{ margin: '0 0 16px 0', color: '#374151', fontSize: '16px', fontWeight: '500' }}>
-            Plan seleccionado. �Qu� quieres hacer?
+            Plan seleccionado. ¿Qué quieres hacer?
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <button onClick={() => {

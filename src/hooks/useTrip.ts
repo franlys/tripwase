@@ -1,13 +1,7 @@
+// src/hooks/useTrip.ts - CORREGIDO
+
 import { useContext } from 'react';
-import { TripContext } from '../contexts/TripContext';
+import { useTrip as useTripContext } from '../contexts/TripContext';
 
-export const useTrip = () => {
-  const context = useContext(TripContext);
-  if (!context) {
-    throw new Error('useTrip must be used within TripProvider');
-  }
-  return context;
-};
-
-// Export vacío para hacer el archivo un módulo válido
-export {};
+// Re-exportar el hook del contexto
+export const useTrip = useTripContext;

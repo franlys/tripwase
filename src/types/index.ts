@@ -1,45 +1,51 @@
-// src/types/index.ts
-// Centralized exports for all types
+// CORRECCIÓN COMPLETA para src/types/index.ts - Agregar interfaces faltantes
+
 export * from './country';
 export * from './location';
-export * from './trip';
 export * from './auth';
 export * from './favorites';
 
-// Common utility types
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
+// Exportar tipos específicos de trip.ts, excluyendo Coordinates que ya existe en otros módulos
+export type {
+  Trip,
+  Destination,
+  Origin,
+  Travelers,
+  Budget,
+  Dates,
+  Activity,
+  EnhancedActivity,
+  DayPlan,
+  AccommodationDetails,
+  FlightDetails,
+  SimplePlan,
+  VehicleOption,
+  TransportSelection,
+  Notification,
+  SearchFilters,
+  TripFilters,
+  TripStats,
+  TripPlan,
+  DefaultActivity,
+  DefaultDayPlan,
+  ActivityManagement,
+  TripFormData,
+  ViewMode,
+  TripPlanOption,
+  PlanInput
+} from './trip';
 
-// Trip-related types
-export type Currency = 'USD' | 'EUR' | 'DOP' | 'GBP';
-export type TravelMode = 'auto' | 'avion' | 'tren' | 'bus';
+// ✅ INTERFACES FALTANTES AGREGADAS:
 
-// ✅ Ahora sí incluye todos los campos que usas en TripGenerator
-export interface TripFormData {
-  destination: string;
-  startDate: string;
-  endDate: string;
-  travelers: number;
-  budget: number;
-  currency: Currency;
-  travelMode: TravelMode;
-}
-
+// Interface para datos de origen (usada en TripWaseGenerator)
 export interface OriginData {
-  country: string;
-  countryCode: string;
   city: string;
+  country: string;
+  flag: string;
 }
 
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-}
+// ✅ CORRECCIÓN: Currency como string union type (no interface) para consistencia
+export type Currency = 'USD' | 'DOP' | 'EUR' | 'GBP';
 
-export type AppView = 'login' | 'home' | 'explore' | 'planner';
-export type DashboardView = 'explore' | 'planner';
+// Si necesitas usar Coordinates de trip.ts específicamente, puedes importarlo con alias:
+// export { Coordinates as TripCoordinates } from './trip';

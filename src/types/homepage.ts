@@ -1,4 +1,5 @@
 // src/types/homepage.ts
+
 export interface Location {
   city: string;
   country: string;
@@ -9,60 +10,62 @@ export interface Location {
 }
 
 export interface Price {
-  currency: 'USD' | 'DOP' | 'EUR';
   amount: number;
-  period?: 'night' | 'person' | 'total' | 'week';
+  currency: 'USD' | 'EUR' | 'DOP';
+  period?: 'night' | 'person' | 'total';
 }
 
 export interface Hotel {
   id: string;
   name: string;
   location: Location;
-  images: string[];
-  stars: 1 | 2 | 3 | 4 | 5;
   price: Price;
+  images: string[];
   amenities: string[];
   description: string;
   rating: number;
   reviews: number;
   highlights: string[];
   availability: boolean;
+  stars?: number;
   isFavorite?: boolean;
 }
 
 export interface Cruise {
   id: string;
   name: string;
-  shipName: string;
   cruiseLine: string;
-  route: Location[];
-  duration: number;
+  departurePort: string; // Puerto de salida
+  destinations: string[]; // Destinos del crucero
+  duration: number; // Duración en días
   price: Price;
   images: string[];
+  amenities: string[];
   description: string;
   highlights: string[];
-  inclusions: string[];
-  departure: Date;
-  capacity: number;
   rating: number;
   reviews: number;
+  shipName: string;
+  capacity: number;
+  quickPlanAvailable: boolean;
   isFavorite?: boolean;
+  // Añadimos location para compatibilidad con recommendation engine
+  location?: Location; // Opcional, basado en departurePort
 }
 
 export interface TouristAttraction {
   id: string;
   name: string;
-  type: 'monument' | 'museum' | 'nature' | 'adventure' | 'cultural' | 'religious' | 'historical';
   location: Location;
+  category: string;
+  entryFee: Price;
   images: string[];
   description: string;
   highlights: string[];
-  bestTimeToVisit: string[];
-  entryFee: Price;
-  openingHours: string;
   rating: number;
   reviews: number;
-  visitDuration: string;
+  openingHours: string;
+  timeNeeded: string;
   accessibility: boolean;
   isFavorite?: boolean;
 }
@@ -134,3 +137,41 @@ export interface CategoryData {
   flights: FlightOffer[];
   restaurants: Restaurant[];
 }
+
+// Tipos para el sistema de favoritos
+export interface FavoritesState {
+  hotels: Hotel[];
+  cruises: Cruise[];
+  attractions: TouristAttraction[];
+  events: Event[];
+  flights: FlightOffer[];
+  restaurants: Restaurant[];
+  totalCount: number;
+  lastUpdated: Date;
+}
+
+// Tipos para búsqueda y filtros
+export interface SearchFilters {
+  location?: string;
+  priceMin?: number;
+  priceMax?: number;
+  rating?: number;
+  amenities?: string[];
+  category?: string;
+  dateRange?: {
+    start: Date;
+    end: Date;
+  };
+}
+
+// Tipos para resultados de búsqueda
+export interface SearchResult<T> {
+  items: T[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  filters: SearchFilters;
+}
+
+// No necesitamos export default para tipos/interfaces
+// Las interfaces se exportan individualmente con 'export interface'
