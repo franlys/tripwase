@@ -21,3 +21,17 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Backend specific
+backend/node_modules/
+backend/.env
+backend/dist/
+backend/prisma/dev.db
+*.db
+*.sqlite
+
+# Environment variables (both frontend and backend)
+.env
+
+
+
