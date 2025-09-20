@@ -34,4 +34,9 @@ backend/prisma/dev.db
 .env
 
 
+# Editar .gitignore y QUITAR esta línea si existe:
+# node_modules/.prisma/
 
+# O agregar excepción:
+node_modules/
+!node_modules/.prisma/
