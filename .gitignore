@@ -25,7 +25,6 @@ yarn-error.log*
 # Backend specific
 backend/node_modules/
 backend/.env
-backend/dist/
 backend/prisma/dev.db
 *.db
 *.sqlite
@@ -33,10 +32,6 @@ backend/prisma/dev.db
 # Environment variables (both frontend and backend)
 .env
 
-
-# Editar .gitignore y QUITAR esta línea si existe:
-# node_modules/.prisma/
-
-# O agregar excepción:
+# Allow Prisma client for deployment
 node_modules/
 !node_modules/.prisma/
