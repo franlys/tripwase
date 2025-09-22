@@ -111,6 +111,44 @@ const server = app.listen(PORT, async () => {
     try {
         await prisma.$connect();
         console.log('✅ Database connected successfully');
+        // Setup automático de base de datos
+        try {
+            console.log('🔧 Setting up database...');
+            // Crear tabla users si no existe
+            await prisma.$executeRaw `
+        CREATE TABLE IF NOT EXISTS "users" (
+          "id" TEXT PRIMARY KEY,
+          "email" TEXT UNIQUE NOT NULL,
+          "name" TEXT NOT NULL,
+          "password" TEXT NOT NULL,
+          "role" TEXT DEFAULT 'USER',
+          "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          "lastLogin" TIMESTAMP
+        );
+      `;
+            // Verificar si el usuario demo ya existe
+            const existingUser = await prisma.$queryRaw `
+        SELECT * FROM "users" WHERE "email" = 'demo@tripwase.com'
+      `;
+            if (!Array.isArray(existingUser) || existingUser.length === 0) {
+                // Crear usuario demo
+                await prisma.$executeRaw `
+          INSERT INTO "users" ("id", "email", "name", "password", "role") 
+          VALUES ('demo-user-id', 'demo@tripwase.com', 'Usuario Demo', '$2a$10$rOJ8vQw8h8TzAKqnFzN9XO8vkZz4vxQa7L8Rc2zKj3mXDcJ6K8F4S', 'USER')
+        `;
+                console.log('✅ Demo user created: demo@tripwase.com');
+            }
+            else {
+                console.log('✅ Demo user already exists');
+            }
+            console.log('✅ Database setup completed');
+        }
+        catch (setupError) {
+            // Corrección del error TypeScript: verificar si es una instancia de Error
+            const errorMessage = setupError instanceof Error ? setupError.message : String(setupError);
+            console.log('⚠️ Database setup error (might already exist):', errorMessage);
+        }
         console.log('\n🚀 TripWase API Server Started');
         console.log('================================');
         console.log(`📡 Server: http://localhost:${PORT}`);
