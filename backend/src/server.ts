@@ -42,35 +42,45 @@ app.use(helmet({
 
 
 // =================================================================
-//                    CONFIGURACIÓN DE CORS
+//                    CONFIGURACIÓN DE CORS (CORREGIDO)
 // =================================================================
-// Lista de orígenes (dominios) permitidos. Tu frontend DEBE estar aquí.
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  'https://tripwase-9na1g6t33-franlys-projects-e0a57c06.vercel.app'
-];
+// 1. Lee la variable de entorno y la separa por comas para crear un array real.
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',')
+  : [];
+
+// (Opcional pero recomendado) Añade orígenes de desarrollo si no estás en producción
+if (process.env.NODE_ENV === 'development') {
+    if (!allowedOrigins.includes('http://localhost:3000')) {
+        allowedOrigins.push('http://localhost:3000');
+    }
+    if (!allowedOrigins.includes('http://127.0.0.1:3000')) {
+        allowedOrigins.push('http://127.0.0.1:3000');
+    }
+}
+
+console.log('✅ Orígenes CORS permitidos:', allowedOrigins);
 
 const corsOptions: CorsOptions = {
-  // La función origin comprueba si el dominio que hace la petición está en nuestra lista permitida.
   origin: (origin, callback) => {
-    // Si el origen está en la lista (o si no hay origen, como en las peticiones de Postman), se permite.
+    // Permite peticiones si el origen está en la lista o si no hay origen (ej. Postman)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      console.error(`❌ Origen CORS no permitido: ${origin}`);
+      callback(new Error('No permitido por la política de CORS'));
     }
   },
-  credentials: true, // Permite que el frontend envíe cookies o cabeceras de autorización.
-  optionsSuccessStatus: 200, // Para navegadores antiguos.
+  credentials: true,
+  optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 };
 
-// 1. Maneja las peticiones de "preflight" (OPTIONS) que el navegador envía primero.
+// 2. Maneja las peticiones de "preflight" (OPTIONS) que el navegador envía primero.
 app.options('*', cors(corsOptions));
 
-// 2. Aplica la configuración de CORS a todas las demás peticiones.
+// 3. Aplica la configuración de CORS a todas las demás peticiones.
 // ¡ESTO DEBE IR ANTES DE LAS RUTAS!
 app.use(cors(corsOptions));
 // =================================================================
@@ -132,6 +142,10 @@ app.use('*', (req: Request, res: Response) => {
 
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('Global error handler:', error);
+  // Si el error es de CORS, envía una respuesta más específica.
+  if (error.message === 'Not allowed by CORS') {
+    return res.status(403).json({ success: false, message: error.message });
+  }
   res.status(500).json({
     success: false,
     message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
