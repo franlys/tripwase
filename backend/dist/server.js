@@ -34,14 +34,22 @@ app.use((0, helmet_1.default)({
         },
     },
 }));
+// Debug CORS configuration
+console.log('🔧 CORS_ORIGINS:', process.env.CORS_ORIGINS);
 const corsOptions = {
-    origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
+    origin: process.env.CORS_ORIGINS?.split(',') || [
+        'http://localhost:3000',
+        'https://tripwase-9na1g6t33-franlys-projects-e0a57c06.vercel.app'
+    ],
     credentials: true,
     optionsSuccessStatus: 200,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 };
+// Apply CORS middleware
 app.use((0, cors_1.default)(corsOptions));
+// Handle preflight requests explicitly
+app.options('*', (0, cors_1.default)(corsOptions));
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
 if (process.env.NODE_ENV === 'development') {
@@ -59,7 +67,7 @@ app.get('/health', async (req, res) => {
             data: {
                 status: 'OK',
                 timestamp: new Date().toISOString(),
-                version: '1.0.0',
+                version: '1.0.2',
                 environment: process.env.NODE_ENV || 'development',
                 database: 'Connected'
             }
@@ -81,7 +89,7 @@ app.get('/', (req, res) => {
         success: true,
         message: 'TripWase API Server',
         data: {
-            version: '1.0.0',
+            version: '1.0.2',
             environment: process.env.NODE_ENV || 'development',
             endpoints: {
                 auth: `${basePath}/auth`,
@@ -127,6 +135,7 @@ const server = app.listen(PORT, async () => {
           "lastLogin" TIMESTAMP
         );
       `;
+            console.log('✅ Users table created successfully');
             // Verificar si el usuario demo ya existe
             const existingUser = await prisma.$queryRaw `
         SELECT * FROM "users" WHERE "email" = 'demo@tripwase.com'
