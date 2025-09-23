@@ -37,6 +37,9 @@ app.use(helmet({
   },
 }));
 
+// Debug CORS configuration
+console.log('🔧 CORS_ORIGINS:', process.env.CORS_ORIGINS);
+
 const corsOptions = {
   origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
   credentials: true,
@@ -45,7 +48,12 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 };
 
+// Apply CORS middleware
 app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -65,7 +73,7 @@ app.get('/health', async (req: Request, res: Response<ApiResponse>) => {
       data: {
         status: 'OK',
         timestamp: new Date().toISOString(),
-        version: '1.0.0',
+        version: '1.0.2',
         environment: process.env.NODE_ENV || 'development',
         database: 'Connected'
       }
@@ -88,7 +96,7 @@ app.get('/', (req: Request, res: Response<ApiResponse>) => {
     success: true,
     message: 'TripWase API Server',
     data: {
-      version: '1.0.0',
+      version: '1.0.2',
       environment: process.env.NODE_ENV || 'development',
       endpoints: {
         auth: `${basePath}/auth`,
