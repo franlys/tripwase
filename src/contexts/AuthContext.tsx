@@ -3,8 +3,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
 
-// Configuración de la API
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+// Configuración de la API - CORREGIDA para producción
+const API_BASE_URL = process.env.REACT_APP_API_URL || 
+  (process.env.NODE_ENV === 'production' 
+    ? 'https://tripwase-production.up.railway.app'
+    : 'http://localhost:3001'
+  );
 const API_VERSION = process.env.REACT_APP_API_VERSION || 'v1';
 const API_URL = `${API_BASE_URL}/api/${API_VERSION}`;
 
@@ -209,6 +213,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!loginData.email || !loginData.password) {
         throw new Error('Email y contraseña son obligatorios');
       }
+
+      console.log('Intentando login con API_URL:', API_URL); // Debug log
 
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
