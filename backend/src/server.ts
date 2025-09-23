@@ -41,8 +41,9 @@ app.use(helmet({
 console.log('🔧 CORS_ORIGINS:', process.env.CORS_ORIGINS);
 
 const corsOptions = {
-  origin: process.env.CORS_ORIGINS?.split(',') || [
+  origin: [
     'http://localhost:3000',
+    'http://127.0.0.1:3000',
     'https://tripwase-9na1g6t33-franlys-projects-e0a57c06.vercel.app'
   ],
   credentials: true,
