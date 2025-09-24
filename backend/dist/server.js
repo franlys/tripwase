@@ -12,6 +12,7 @@ const client_1 = require("@prisma/client");
 const auth_1 = __importDefault(require("./routes/auth"));
 const trips_1 = __importDefault(require("./routes/trips"));
 dotenv_1.default.config();
+// --- Verificación de Variables de Entorno ---
 const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
 for (const envVar of requiredEnvVars) {
     if (!process.env[envVar]) {
@@ -19,10 +20,12 @@ for (const envVar of requiredEnvVars) {
         process.exit(1);
     }
 }
+// --- Cliente de Prisma ---
 const prisma = new client_1.PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
 });
 const app = (0, express_1.default)();
+// --- Middlewares de Seguridad ---
 app.use((0, helmet_1.default)({
     crossOriginEmbedderPolicy: false,
     contentSecurityPolicy: {
@@ -34,31 +37,83 @@ app.use((0, helmet_1.default)({
         },
     },
 }));
-// Debug CORS configuration
-console.log('🔧 CORS_ORIGINS:', process.env.CORS_ORIGINS);
-const corsOptions = {
-    origin: [
+// =================================================================
+//                    CONFIGURACIÓN DE CORS DEFINITIVA
+// =================================================================
+// Función inteligente para validar orígenes
+const isValidOrigin = (origin) => {
+    // Orígenes locales (desarrollo)
+    const localOrigins = [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
-        'https://tripwase-9na1g6t33-franlys-projects-e0a57c06.vercel.app'
-    ],
+        'http://localhost:3001',
+        'http://127.0.0.1:3001'
+    ];
+    if (localOrigins.includes(origin)) {
+        return true;
+    }
+    // Dominios de Vercel - permite cualquier subdominio de tu cuenta
+    if (origin.includes('franlys-projects-e0a57c06.vercel.app') ||
+        origin.includes('tripwase.vercel.app') ||
+        origin.endsWith('.vercel.app')) {
+        return true;
+    }
+    // Dominios personalizados (agregar aquí cuando tengas dominio propio)
+    const customDomains = [
+        'https://tripwase.com',
+        'https://www.tripwase.com'
+    ];
+    if (customDomains.includes(origin)) {
+        return true;
+    }
+    return false;
+};
+const corsOptions = {
+    origin: (origin, callback) => {
+        // Permitir peticiones sin origin (mobile apps, Postman, etc.)
+        if (!origin) {
+            console.log('✅ CORS: Petición sin origen permitida (mobile/Postman)');
+            return callback(null, true);
+        }
+        // Validar origen
+        if (isValidOrigin(origin)) {
+            console.log(`✅ CORS: Origen permitido - ${origin}`);
+            callback(null, true);
+        }
+        else {
+            console.error(`❌ CORS: Origen BLOQUEADO - ${origin}`);
+            callback(new Error(`Origen no permitido por CORS: ${origin}`));
+        }
+    },
     credentials: true,
     optionsSuccessStatus: 200,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'Accept',
+        'Origin'
+    ],
+    exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
+    maxAge: 86400 // 24 horas de cache para preflight
 };
-// Apply CORS middleware
+// Aplicar CORS antes que cualquier otra ruta
 app.use((0, cors_1.default)(corsOptions));
-// Handle preflight requests explicitly
+// Manejar preflight OPTIONS explícitamente
 app.options('*', (0, cors_1.default)(corsOptions));
+// =================================================================
+// --- Middlewares Generales ---
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
+// Logging mejorado
 if (process.env.NODE_ENV === 'development') {
     app.use((0, morgan_1.default)('dev'));
 }
 else {
     app.use((0, morgan_1.default)('combined'));
 }
+// --- Rutas Públicas ---
 app.get('/health', async (req, res) => {
     try {
         await prisma.$queryRaw `SELECT 1`;
@@ -68,19 +123,28 @@ app.get('/health', async (req, res) => {
             data: {
                 status: 'OK',
                 timestamp: new Date().toISOString(),
-                version: '1.0.2',
-                environment: process.env.NODE_ENV || 'development',
-                database: 'Connected'
+                version: '1.0.7',
+                cors: 'Smart CORS enabled'
             }
         });
     }
     catch (error) {
-        console.error('Health check failed:', error);
         res.status(503).json({
             success: false,
             message: 'Service unavailable'
         });
     }
+});
+// Endpoint para debugging CORS
+app.get('/cors-test', (req, res) => {
+    res.json({
+        success: true,
+        message: 'CORS test successful',
+        data: {
+            origin: req.get('Origin') || 'No origin header',
+            headers: req.headers
+        }
+    });
 });
 const API_PREFIX = process.env.API_PREFIX || '/api';
 const API_VERSION = process.env.API_VERSION || 'v1';
@@ -88,20 +152,23 @@ const basePath = `${API_PREFIX}/${API_VERSION}`;
 app.get('/', (req, res) => {
     res.json({
         success: true,
-        message: 'TripWase API Server',
+        message: 'TripWase API Server is running!',
         data: {
-            version: '1.0.2',
-            environment: process.env.NODE_ENV || 'development',
+            version: '1.0.7',
+            cors: 'Smart CORS enabled',
             endpoints: {
+                health: '/health',
+                corsTest: '/cors-test',
                 auth: `${basePath}/auth`,
-                trips: `${basePath}/trips`,
-                health: '/health'
+                trips: `${basePath}/trips`
             }
         }
     });
 });
+// --- Rutas de la API ---
 app.use(`${basePath}/auth`, auth_1.default);
 app.use(`${basePath}/trips`, trips_1.default);
+// --- Manejadores de Errores ---
 app.use('*', (req, res) => {
     res.status(404).json({
         success: false,
@@ -110,20 +177,37 @@ app.use('*', (req, res) => {
 });
 app.use((error, req, res, next) => {
     console.error('Global error handler:', error);
+    // Error específico de CORS
+    if (error.message.includes('CORS')) {
+        return res.status(403).json({
+            success: false,
+            message: 'CORS Error: Origen no permitido',
+            data: {
+                origin: req.get('Origin'),
+                allowedOrigins: [
+                    'localhost:3000',
+                    '*.vercel.app',
+                    'tripwase.com'
+                ]
+            }
+        });
+    }
     res.status(500).json({
         success: false,
-        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+        message: process.env.NODE_ENV === 'development'
+            ? error.message
+            : 'Internal server error'
     });
 });
+// --- Arranque del Servidor ---
 const PORT = process.env.PORT || 3001;
-const server = app.listen(PORT, async () => {
+app.listen(PORT, async () => {
     try {
         await prisma.$connect();
         console.log('✅ Database connected successfully');
-        // Setup automático de base de datos
+        // Setup de base de datos automático
         try {
             console.log('🔧 Setting up database...');
-            // Crear tabla users si no existe
             await prisma.$executeRaw `
         CREATE TABLE IF NOT EXISTS "users" (
           "id" TEXT PRIMARY KEY,
@@ -136,35 +220,34 @@ const server = app.listen(PORT, async () => {
           "lastLogin" TIMESTAMP
         );
       `;
-            console.log('✅ Users table created successfully');
-            // Verificar si el usuario demo ya existe
+            console.log('✅ Users table ready');
+            // Verificar usuario demo
             const existingUser = await prisma.$queryRaw `
-        SELECT * FROM "users" WHERE "email" = 'demo@tripwase.com'
+        SELECT * FROM "users" WHERE "email" = 'demo@tripwase.com' LIMIT 1
       `;
             if (!Array.isArray(existingUser) || existingUser.length === 0) {
-                // Crear usuario demo
                 await prisma.$executeRaw `
           INSERT INTO "users" ("id", "email", "name", "password", "role") 
           VALUES ('demo-user-id', 'demo@tripwase.com', 'Usuario Demo', '$2a$10$rOJ8vQw8h8TzAKqnFzN9XO8vkZz4vxQa7L8Rc2zKj3mXDcJ6K8F4S', 'USER')
         `;
-                console.log('✅ Demo user created: demo@tripwase.com');
+                console.log('✅ Demo user created');
             }
             else {
-                console.log('✅ Demo user already exists');
+                console.log('✅ Demo user exists');
             }
             console.log('✅ Database setup completed');
         }
         catch (setupError) {
-            // Corrección del error TypeScript: verificar si es una instancia de Error
             const errorMessage = setupError instanceof Error ? setupError.message : String(setupError);
-            console.log('⚠️ Database setup error (might already exist):', errorMessage);
+            console.log('⚠️ Database setup warning:', errorMessage);
         }
         console.log('\n🚀 TripWase API Server Started');
         console.log('================================');
         console.log(`📡 Server: http://localhost:${PORT}`);
         console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-        console.log(`📊 Health Check: http://localhost:${PORT}/health`);
-        console.log(`🔗 API Base: http://localhost:${PORT}${basePath}`);
+        console.log(`🔒 Smart CORS: Enabled`);
+        console.log(`📊 Health: http://localhost:${PORT}/health`);
+        console.log(`🔗 API: http://localhost:${PORT}${basePath}`);
         console.log('================================\n');
     }
     catch (error) {
