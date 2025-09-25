@@ -17,6 +17,101 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   lastLogin DateTime?
+  
+  // Relaciones
+  trips         Trip[]
+  notifications Notification[]
+  preferences   UserPreferences?
 
   @@map("users")
+}
+
+model UserPreferences {
+  id            String  @id @default(cuid())
+  userId        String  @unique
+  currency      String  @default("USD")
+  language      String  @default("ES")
+  notifications Boolean @default(true)
+  
+  // Relación
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_preferences")
+}
+
+model Trip {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  destinationId String   // Relación simple con Destination
+  originCity    String
+  originCountry String
+  startDate     DateTime
+  endDate       DateTime
+  duration      Int
+  adultsCount   Int      @default(1)
+  childrenCount Int      @default(0)
+  
+  // Budget fields
+  budgetTotal   Float?
+  budgetUsed    Float?   @default(0)
+  totalCost     Float?
+  currency      String   @default("USD")
+  
+  // Trip details
+  interests     String?  // JSON string
+  travelStyle   String?
+  status        String   @default("PLANNING") // PLANNING, ACTIVE, COMPLETED, CANCELLED
+  isArchived    Boolean  @default(false)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relaciones
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destination Destination @relation(fields: [destinationId], references: [id])
+
+  @@map("trips")
+}
+
+model Destination {
+  id              String  @id @default(cuid())
+  name            String
+  country         String
+  city            String?
+  description     String?
+  latitude        Float?
+  longitude       Float?
+  
+  // Campos adicionales del seeding
+  averagePrice    Float?
+  popularityScore Float?
+  categories      String?  // JSON string
+  imageUrl        String?
+  averageTemp     Float?
+  climate         String?
+  bestMonths      String?  // JSON string
+  
+  // Relaciones
+  trips Trip[]
+  
+  // Índice único compuesto para name_country (usado en seeding)
+  @@unique([name, country], name: "name_country")
+  @@map("destinations")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, SUCCESS, WARNING, ERROR
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  // Relaciones
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("notifications")
 }

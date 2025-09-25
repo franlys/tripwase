@@ -12,24 +12,27 @@ const getTripStats = async (req, res) => {
             });
             return;
         }
+        // CORRECCIÓN: usar 'trip' (singular) no 'trips' (plural)
         const trips = await prisma.trip.findMany({
             where: {
                 userId: req.user.id,
                 isArchived: false
             },
             include: {
-                destination: true
+                destination: true // CORRECCIÓN: 'destination' (singular) según el schema
             }
         });
         const byStatus = trips.reduce((acc, trip) => {
             acc[trip.status] = (acc[trip.status] || 0) + 1;
             return acc;
         }, {});
-        const totalBudget = trips.reduce((sum, trip) => sum + trip.budgetTotal, 0);
-        // Corregir el tipado de destinations
-        const destinations = [...new Set(trips.map((trip) => trip.destination.name))];
+        // CORRECCIÓN: usar budgetTotal en lugar de budget
+        const totalBudget = trips.reduce((sum, trip) => sum + (trip.budgetTotal || 0), 0);
+        // CORRECCIÓN: obtener nombres de destinos del campo 'destination' (singular)
+        const allDestinations = trips.map((trip) => trip.destination?.name).filter(Boolean);
+        const destinations = [...new Set(allDestinations)];
         const now = new Date();
-        const upcomingTrips = trips.filter((trip) => trip.startDate > now && trip.status !== 'CANCELLED').length;
+        const upcomingTrips = trips.filter((trip) => new Date(trip.startDate) > now && trip.status !== 'CANCELLED').length;
         const stats = {
             total: trips.length,
             byStatus,
