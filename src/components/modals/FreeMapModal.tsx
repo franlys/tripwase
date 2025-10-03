@@ -1,4 +1,4 @@
-// src/components/modals/FreeMapModal.tsx - CON ANIMACIONES
+// src/components/modals/FreeMapModal.tsx - CON BOTÓN DE CERRAR
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, X, Globe, MapPin, Navigation } from 'lucide-react';
 import { SelectedLocation } from '../../types';
@@ -15,7 +15,6 @@ declare global {
   }
 }
 
-// Sugerencias de lugares populares
 const POPULAR_DESTINATIONS = [
   { name: 'Punta Cana, República Dominicana', lat: 18.5601, lng: -68.3725 },
   { name: 'París, Francia', lat: 48.8566, lng: 2.3522 },
@@ -39,16 +38,14 @@ const FreeMapModal: React.FC<FreeMapModalProps> = ({
   const [map, setMap] = useState<any>(null);
   const [marker, setMarker] = useState<any>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  // ✅ Estado para controlar animación de cierre
   const [isClosing, setIsClosing] = useState(false);
 
-  // ✅ Función mejorada para cerrar con animación
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
       onClose();
       setIsClosing(false);
-    }, 300); // Duración de la animación de cierre
+    }, 300);
   };
 
   useEffect(() => {
@@ -84,7 +81,6 @@ const FreeMapModal: React.FC<FreeMapModalProps> = ({
         minZoom: 2
       }).addTo(newMap);
 
-      // Botón para vista mundial
       const worldViewButton = window.L.control({ position: 'topright' });
       worldViewButton.onAdd = function() {
         const div = window.L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
@@ -275,7 +271,6 @@ const FreeMapModal: React.FC<FreeMapModalProps> = ({
     }
   };
 
-  // ✅ Función para manejar clics en el overlay
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       handleClose();
@@ -285,7 +280,6 @@ const FreeMapModal: React.FC<FreeMapModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    // ✅ OVERLAY CON CLASE DE ANIMACIÓN
     <div 
       className={`modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4`}
       style={{
@@ -305,7 +299,6 @@ const FreeMapModal: React.FC<FreeMapModalProps> = ({
       }}
       onClick={handleOverlayClick}
     >
-      {/* ✅ CONTAINER CON ANIMACIONES */}
       <div 
         className={`modal-content ${isClosing ? 'modal-content-closing' : ''} bg-white rounded-2xl shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-y-auto`}
         style={{
@@ -330,17 +323,22 @@ const FreeMapModal: React.FC<FreeMapModalProps> = ({
               <p className="text-sm text-gray-600">Selecciona cualquier ubicación del planeta</p>
             </div>
           </div>
+          {/* ✅ BOTÓN DE CERRAR AGREGADO Y MEJORADO */}
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-full transition-colors"
-            style={{ zIndex: 100001 }}
+            className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-3 rounded-full transition-all duration-200 hover:scale-110"
+            style={{ 
+              zIndex: 100001,
+              border: '2px solid #e5e7eb',
+              background: 'white'
+            }}
+            title="Cerrar (ESC)"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
         
         <div className="p-6">
-          {/* Barra de búsqueda con sugerencias */}
           <div className="mb-4 relative">
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="flex-1 relative">
@@ -353,6 +351,13 @@ const FreeMapModal: React.FC<FreeMapModalProps> = ({
                   onKeyPress={handleKeyPress}
                   onFocus={() => setShowSuggestions(true)}
                   className="form-input pl-10 pr-4 py-3"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem 0.75rem 2.5rem',
+                    border: '2px solid #d1d5db',
+                    borderRadius: '0.5rem',
+                    fontSize: '1rem'
+                  }}
                 />
                 <button
                   onClick={() => setShowSuggestions(!showSuggestions)}
@@ -362,18 +367,29 @@ const FreeMapModal: React.FC<FreeMapModalProps> = ({
                   <Navigation className="w-4 h-4" />
                 </button>
               </div>
-              {/* ✅ BOTÓN CON CLASES MEJORADAS */}
               <button
                 onClick={searchPlace}
                 disabled={isSearching || !searchQuery.trim()}
-                className="btn-premium"
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  background: isSearching || !searchQuery.trim() 
+                    ? '#d1d5db' 
+                    : 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontWeight: '600',
+                  cursor: isSearching || !searchQuery.trim() ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
               >
                 <Search className="w-4 h-4" />
                 {isSearching ? 'Buscando...' : 'Buscar'}
               </button>
             </div>
 
-            {/* Panel de sugerencias */}
             {showSuggestions && (
               <div 
                 className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg"
@@ -401,7 +417,6 @@ const FreeMapModal: React.FC<FreeMapModalProps> = ({
             )}
           </div>
 
-          {/* Instrucciones mejoradas */}
           <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-start gap-3">
               <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -410,10 +425,10 @@ const FreeMapModal: React.FC<FreeMapModalProps> = ({
               <div className="text-sm">
                 <p className="font-medium text-blue-900 mb-1">Cómo seleccionar una ubicación:</p>
                 <ul className="text-blue-700 space-y-1">
-                  <li>• <strong>Buscar:</strong> Escribe cualquier lugar y presiona "Buscar"</li>
-                  <li>• <strong>Hacer clic:</strong> Haz clic directamente en el mapa</li>
-                  <li>• <strong>Destinos populares:</strong> Usa el botón 🧭 para ver sugerencias</li>
-                  <li>• <strong>Vista mundial:</strong> Usa el botón 🌍 en el mapa para ver todo el planeta</li>
+                  <li><strong>Buscar:</strong> Escribe cualquier lugar y presiona "Buscar"</li>
+                  <li><strong>Hacer clic:</strong> Haz clic directamente en el mapa</li>
+                  <li><strong>Destinos populares:</strong> Usa el botón 🧭 para ver sugerencias</li>
+                  <li><strong>Vista mundial:</strong> Usa el botón 🌍 en el mapa para ver todo el planeta</li>
                 </ul>
               </div>
             </div>
@@ -440,7 +455,6 @@ const FreeMapModal: React.FC<FreeMapModalProps> = ({
             )}
           </div>
 
-          {/* Panel de información más detallado */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="text-sm text-gray-600 flex-1">
               {selectedLocation ? (
@@ -463,10 +477,18 @@ const FreeMapModal: React.FC<FreeMapModalProps> = ({
               )}
             </div>
             <div className="flex gap-3 w-full sm:w-auto">
-              {/* ✅ BOTONES CON CLASES MEJORADAS */}
               <button
                 onClick={handleClose}
-                className="btn-secondary-premium flex-1 sm:flex-none"
+                style={{
+                  flex: '1',
+                  padding: '0.75rem 1.5rem',
+                  background: 'white',
+                  color: '#6b7280',
+                  border: '2px solid #d1d5db',
+                  borderRadius: '0.5rem',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
               >
                 Cancelar
               </button>
@@ -478,7 +500,22 @@ const FreeMapModal: React.FC<FreeMapModalProps> = ({
                   }
                 }}
                 disabled={!selectedLocation}
-                className="btn-premium flex-1 sm:flex-none"
+                style={{
+                  flex: '1',
+                  padding: '0.75rem 1.5rem',
+                  background: selectedLocation 
+                    ? 'linear-gradient(135deg, #10b981, #059669)' 
+                    : '#d1d5db',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontWeight: '600',
+                  cursor: selectedLocation ? 'pointer' : 'not-allowed',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
               >
                 <MapPin className="w-4 h-4" />
                 Confirmar Ubicación

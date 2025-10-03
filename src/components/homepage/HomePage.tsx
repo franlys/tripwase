@@ -1,4 +1,4 @@
-// src/components/homepage/HomePage.tsx
+// src/components/homepage/HomePage.tsx - VERSIÓN CORREGIDA COMPLETA
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   MapPin,
@@ -81,7 +81,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToPlanner }) => {
     enabled: true
   });
 
-  // Auto-rotate testimonials
+  // ✅ CORRECCIÓN: Auto-rotate testimonials cada 5 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
@@ -249,6 +249,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToPlanner }) => {
     { number: '4.9★', label: 'Calificación Promedio', icon: <Star className="w-6 h-6" /> }
   ];
 
+  // ✅ CORRECCIÓN: Ofertas con colores visibles
   const specialOffers = [
     {
       title: 'Oferta Early Bird',
@@ -275,11 +276,9 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToPlanner }) => {
 
   const handleItemClick = (item: any, type: string) => {
     console.log(`Clicked on ${type}:`, item);
-    // Aquí implementarías la navegación al detalle del item
   };
 
   const handleFavoriteToggle = (destination: any) => {
-    // Convertir el destino a formato compatible con el sistema de favoritos
     const destinationPrice = getItemPrice(destination);
     const destinationLocation = getItemLocation(destination);
     const destinationAmenities = getItemAmenities(destination);
@@ -520,7 +519,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToPlanner }) => {
 
   return (
     <div className="homepage-professional">
-      {/* Hero Section Mejorado */}
+      {/* Hero Section */}
       <section className="hero-premium">
         <div className="hero-content-premium">
           <div className="hero-badge">
@@ -545,7 +544,6 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToPlanner }) => {
             </button>
           </div>
 
-          {/* Badge de favoritos si existen */}
           {getTotalFavorites() > 0 && (
             <div className="mt-4 inline-flex items-center bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
               <Heart className="w-4 h-4 text-red-400 mr-2 fill-current" />
@@ -567,7 +565,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToPlanner }) => {
         </div>
       </section>
 
-      {/* Sección de Recomendaciones Personalizadas */}
+      {/* Sección de Recomendaciones */}
       {hasSufficientData && renderRecommendationsSection()}
 
       {/* Categorías de Viaje */}
@@ -653,7 +651,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToPlanner }) => {
         </div>
       </section>
 
-      {/* Ofertas Especiales */}
+      {/* ✅ CORRECCIÓN: Ofertas Especiales con colores visibles */}
       <section className="special-offers">
         <div className="container-premium">
           <div className="section-header-premium">
@@ -666,12 +664,12 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToPlanner }) => {
             {specialOffers.map((offer, index) => (
               <div key={index} className="offer-card">
                 <div className={`offer-header bg-gradient-to-br ${offer.color}`}>
-                  <div className="offer-icon">{offer.icon}</div>
-                  <div className="offer-discount">{offer.discount}</div>
+                  <div className="offer-icon text-white">{offer.icon}</div>
+                  <div className="offer-discount text-white">{offer.discount}</div>
                 </div>
                 <div className="offer-content">
-                  <h3 className="offer-title">{offer.title}</h3>
-                  <p className="offer-description">{offer.description}</p>
+                  <h3 className="offer-title text-gray-900">{offer.title}</h3>
+                  <p className="offer-description text-gray-700">{offer.description}</p>
                   <button className="offer-btn">Aprovechar Oferta</button>
                 </div>
               </div>
@@ -691,7 +689,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToPlanner }) => {
           </div>
           <div className="testimonial-card">
             <div className="testimonial-quote">
-              <span className="text-gray-400 text-6xl font-serif">“</span>
+              <span className="text-gray-400 text-6xl font-serif">"</span>
               <p>{testimonials[currentTestimonial].text}</p>
             </div>
             <div className="testimonial-author">

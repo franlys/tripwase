@@ -1,12 +1,11 @@
-// src/components/modals/OriginModal.tsx
+// src/components/modals/OriginModal.tsx - CON BOTÓN DE CERRAR
 import React, { useState, useEffect } from 'react';
-import { Map, AlertCircle } from 'lucide-react';
+import { Map, AlertCircle, X } from 'lucide-react';
 import { CountryCode } from '../../types';
 
-// Interfaz OriginData CORREGIDA con countryCode
 interface OriginData {
   country: string;
-  countryCode: CountryCode;  // ← AGREGADO: propiedad que faltaba
+  countryCode: CountryCode;
   city: string;
   flag: string;
   coordinates?: {
@@ -140,10 +139,9 @@ const OriginModal: React.FC<OriginModalProps> = ({
       return;
     }
 
-    // ✅ Ahora funciona correctamente con countryCode incluido
     const originData: OriginData = {
       country: selectedCountryData.name,
-      countryCode: selectedCountry,  // ✅ Esta propiedad ahora existe en la interfaz
+      countryCode: selectedCountry,
       city: selectedCity || selectedCountryData.cities[0] || '',
       flag: selectedCountryData.flag
     };
@@ -202,6 +200,22 @@ const OriginModal: React.FC<OriginModalProps> = ({
         }}
         onClick={e => e.stopPropagation()}
       >
+        {/* ✅ BOTÓN DE CERRAR AGREGADO */}
+        {!isRequired && onClose && (
+          <button
+            onClick={handleClose}
+            className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors z-50"
+            style={{
+              background: 'white',
+              border: '2px solid #e5e7eb',
+              cursor: 'pointer'
+            }}
+            title="Cerrar"
+          >
+            <X className="w-5 h-5 text-gray-600" />
+          </button>
+        )}
+
         <div className="origin-modal-header" style={{ padding: '2rem 2rem 1rem', textAlign: 'center', borderBottom: '1px solid #e5e7eb', position: 'relative' }}>
           {isRequired && (
             <div 
