@@ -1,10 +1,5 @@
-// src/components/trip/TripWaseGenerator.tsx - VERSIÓN COMPLETA CORREGIDA
-
+// src/components/trip/TripWaseGenerator.tsx
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-
-// ===================================================================
-// IMPORTACIONES CORREGIDAS Y COMPLETAS
-// ===================================================================
 import {
   DndContext, DragEndEvent, DragOverlay, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors, DragStartEvent
 } from '@dnd-kit/core';
@@ -25,7 +20,6 @@ import {
   CreditCard, Bookmark, TrendingUp, Calendar as CalendarIcon
 } from 'lucide-react';
 
-// --- Dependencias de tu proyecto ---
 import { generateThreePlans, PlanInput } from '../../utils/multiplePlanGenerator';
 import { SimplePlan } from '../../types/trip';
 import OriginModal from '../modals/OriginModal';
@@ -34,20 +28,13 @@ import { OriginData } from '../../types';
 import {
   Activity, EnhancedActivity, DayPlan, VehicleOption, TransportSelection, ViewMode
 } from '../../types/trip';
-
-// --- IMPORTACIONES NUEVAS PASO 1 ---
 import { useTrip } from '../../contexts/TripContext';
 import { useNavigate } from 'react-router-dom';
 
-// --- PROPS DEL COMPONENTE ---
 interface TripWaseGeneratorProps {
   onBackToExplore?: () => void;
   onShowPlans?: (plans: SimplePlan[]) => void;
 }
-
-// ===================================================================
-// INTERFACES Y TIPOS ADICIONALES + TRANSPORTE INTELIGENTE - CORREGIDO
-// ===================================================================
 
 interface TimeConflict {
   activityId: string;
@@ -67,7 +54,6 @@ interface ActivityTimeRule {
   };
 }
 
-// NUEVAS INTERFACES PARA TRANSPORTE INTELIGENTE
 interface AirlineOption {
   id: string;
   name: string;
@@ -88,7 +74,6 @@ interface FlightSelection {
   estimatedCost: number;
 }
 
-// NUEVAS INTERFACES PARA TRANSPORTE LOCAL EN DESTINO
 interface RentalCarOption {
   id: string;
   company: string;
@@ -111,9 +96,6 @@ interface LocalTransportSelection {
   publicTransportBudget: number;
 }
 
-// ===================================================================
-// REGLAS DE TIEMPO POR CATEGORÍA
-// ===================================================================
 const TIME_RULES: Record<string, ActivityTimeRule> = {
   museum: { category: 'museum', defaultTime: '10:00', isFixed: true, duration: 120, restrictions: { minHour: 9, maxHour: 17 } },
   restaurant: { category: 'restaurant', defaultTime: '12:00', isFixed: true, duration: 90 },
@@ -123,9 +105,6 @@ const TIME_RULES: Record<string, ActivityTimeRule> = {
   nightlife: { category: 'nightlife', defaultTime: '21:00', isFixed: false, duration: 180, restrictions: { minHour: 20, maxHour: 2 } }
 };
 
-// ===================================================================
-// BASE DE DATOS DE AEROLÍNEAS
-// ===================================================================
 const AIRLINES_DATABASE: AirlineOption[] = [
   {
     id: 'copa',
@@ -183,11 +162,7 @@ const AIRLINES_DATABASE: AirlineOption[] = [
   }
 ];
 
-// ===================================================================
-// BASE DE DATOS DE RENTAL CARS PARA DESTINOS INTERNACIONALES - CORREGIDO
-// ===================================================================
 const RENTAL_CARS_DATABASE: RentalCarOption[] = [
-  // ECONÓMICOS
   {
     id: 'hertz_nissan_versa',
     company: 'Hertz',
@@ -214,8 +189,6 @@ const RENTAL_CARS_DATABASE: RentalCarOption[] = [
     fuelType: 'gasolina',
     rating: 3.8
   },
-  
-  // COMPACTOS
   {
     id: 'avis_honda_civic',
     company: 'Avis',
@@ -242,8 +215,6 @@ const RENTAL_CARS_DATABASE: RentalCarOption[] = [
     fuelType: 'hibrido',
     rating: 4.5
   },
-  
-  // INTERMEDIOS
   {
     id: 'hertz_toyota_camry',
     company: 'Hertz',
@@ -270,8 +241,6 @@ const RENTAL_CARS_DATABASE: RentalCarOption[] = [
     fuelType: 'gasolina',
     rating: 4.3
   },
-  
-  // SUVs
   {
     id: 'avis_jeep_compass',
     company: 'Avis',
@@ -298,8 +267,6 @@ const RENTAL_CARS_DATABASE: RentalCarOption[] = [
     fuelType: 'hibrido',
     rating: 4.4
   },
-  
-  // LUJO
   {
     id: 'hertz_bmw_320i',
     company: 'Hertz',
@@ -326,8 +293,6 @@ const RENTAL_CARS_DATABASE: RentalCarOption[] = [
     fuelType: 'gasolina',
     rating: 4.8
   },
-  
-  // PREMIUM
   {
     id: 'hertz_cadillac_escalade',
     company: 'Hertz',
@@ -356,15 +321,9 @@ const RENTAL_CARS_DATABASE: RentalCarOption[] = [
   }
 ];
 
-// ===================================================================
-// FUNCIONES UTILITARIAS PARA TRANSPORTE INTELIGENTE
-// ===================================================================
-
-// 1. FUNCIÓN PRINCIPAL: Detectar si el viaje es internacional
 const isInternationalTrip = (origin: OriginData | null, destination: string): boolean => {
   if (!origin) return false;
   
-  // Lista básica de países y sus ciudades principales para detección
   const COUNTRY_CITIES: Record<string, string[]> = {
     'República Dominicana': ['santo domingo', 'santiago', 'punta cana', 'puerto plata', 'la romana', 'samana'],
     'Estados Unidos': ['new york', 'miami', 'orlando', 'los angeles', 'las vegas', 'chicago'],
@@ -378,17 +337,12 @@ const isInternationalTrip = (origin: OriginData | null, destination: string): bo
 
   const originCountry = origin.country;
   const destinationLower = destination.toLowerCase().trim();
-  
-  // Verificar si el destino está en el mismo país que el origen
   const originCities = COUNTRY_CITIES[originCountry] || [];
-  
-  // Si el destino coincide con una ciudad del país de origen, es doméstico
   const isDomestic = originCities.some(city => destinationLower.includes(city));
   
-  return !isDomestic; // Es internacional si NO es doméstico
+  return !isDomestic;
 };
 
-// 2. Obtener aerolínea favorita del localStorage
 const getFavoriteAirline = (): string | null => {
   try {
     return localStorage.getItem('tripwase_favorite_airline');
@@ -397,7 +351,6 @@ const getFavoriteAirline = (): string | null => {
   }
 };
 
-// 3. Guardar aerolínea favorita
 const setFavoriteAirline = (airlineId: string): void => {
   try {
     localStorage.setItem('tripwase_favorite_airline', airlineId);
@@ -406,7 +359,6 @@ const setFavoriteAirline = (airlineId: string): void => {
   }
 };
 
-// 4. Ordenar aerolíneas poniendo la favorita primero
 const sortAirlinesByPreference = (airlines: AirlineOption[]): AirlineOption[] => {
   const favoriteId = getFavoriteAirline();
   if (!favoriteId) return airlines;
@@ -417,22 +369,17 @@ const sortAirlinesByPreference = (airlines: AirlineOption[]): AirlineOption[] =>
   return favorite ? [favorite, ...others] : airlines;
 };
 
-// 5. Calcular costo de vuelo según clase
 const calculateFlightCost = (airline: AirlineOption, flightClass: 'turista' | 'negocios' | 'primera', travelers: number): number => {
   const multiplier = airline.priceMultipliers[flightClass];
   return Math.round(airline.basePrice * multiplier * travelers);
 };
 
-// ===================================================================
-// COMPONENTE PRINCIPAL Y DEFINITIVO - PASO 1 COMPLETADO
-// ===================================================================
-const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, onShowPlans }) => {
 
-  // --- HOOKS NUEVOS PASO 1 ---
+const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, onShowPlans }) => {
   const { saveTrip, trips, addNotification } = useTrip();
   const navigate = useNavigate();
 
-  // --- ESTADOS COMPLETOS ---
+  // Estados principales
   const [currentView, setCurrentView] = useState<ViewMode>('planning');
   const [dayPlans, setDayPlans] = useState<DayPlan[]>([]);
   const [availableActivities, setAvailableActivities] = useState<EnhancedActivity[]>([]);
@@ -451,45 +398,39 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
   const [showMapModal, setShowMapModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [toasts, setToasts] = useState<Array<{ id: number; message: string; type: 'success' | 'error' | 'warning' }>>([]);
-
-  // --- ESTADOS NUEVOS PASO 1 ---
   const [isSaving, setIsSaving] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [tripSaved, setTripSaved] = useState(false);
-
-  // NUEVOS ESTADOS PARA TRANSPORTE INTELIGENTE
+  
   const [flightSelection, setFlightSelection] = useState<FlightSelection>({
     airline: null,
     class: 'turista',
     estimatedCost: 0
   });
-
+  
   const [favoriteAirlineId, setFavoriteAirlineId] = useState<string | null>(null);
-
-  // NUEVOS ESTADOS PARA TRANSPORTE LOCAL EN DESTINO
+  
   const [localTransportSelection, setLocalTransportSelection] = useState<LocalTransportSelection>({
-    mode: null, // 'auto' o 'manual'
-    localTransportType: null, // 'rental' o 'public'
+    mode: null,
+    localTransportType: null,
     selectedRentalCar: null,
-    publicTransportBudget: 150 // Presupuesto estimado para transporte público
+    publicTransportBudget: 150
   });
-
-  // Estados para transporte mejorados - CORREGIDO con nuevas opciones
+  
   const [transportSelection, setTransportSelection] = useState<TransportSelection & {
     transportType?: 'public' | 'taxi';
   }>({
-    hasVehicle: null, // IMPORTANTE: Inicializar como null para forzar selección
+    hasVehicle: null,
     rentVehicle: false,
     selectedVehicle: null,
     fuelBudget: 0,
     transportType: undefined
   });
-
-  // Estados para itinerario
+  
   const [editingTime, setEditingTime] = useState<{ dayId: string; activityId: string } | null>(null);
   const [conflicts, setConflicts] = useState<TimeConflict[]>([]);
 
-  // --- FUNCIONES UTILITARIAS ---
+  // ✅ CORRECCIÓN 1: Función para generar IDs únicos
   const generateUniqueId = (prefix: string = 'item'): string => {
     return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   };
@@ -512,14 +453,12 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     return `${newHours.toString().padStart(2, '0')}:${newMins.toString().padStart(2, '0')}`;
   };
 
-  // --- TOAST SYSTEM ---
   const showToast = useCallback((message: string, type: 'success' | 'error' | 'warning' = 'success') => {
     const id = Date.now();
     setToasts(prev => [...prev.slice(-2), { id, message, type }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
   }, []);
 
-  // --- INICIALIZACIÓN DE FAVORITOS ---
   useEffect(() => {
     const savedFavorite = getFavoriteAirline();
     if (savedFavorite) {
@@ -527,19 +466,8 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     }
   }, []);
 
-  // --- VALIDACIÓN Y NAVEGACIÓN MEJORADA ---
   const validateForm = (): boolean => {
-    console.log('Validando formulario...', {
-      selectedOrigin,
-      destination,
-      startDate,
-      endDate,
-      travelers,
-      budget
-    });
-
     if (!selectedOrigin) {
-      console.log('Origen no seleccionado - abriendo modal');
       setShowOriginModal(true);
       showToast('Por favor selecciona tu origen', 'error');
       return false;
@@ -567,14 +495,10 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     return true;
   };
 
-  // VALIDACIÓN MEJORADA PARA TRANSPORTE INTELIGENTE
   const validateTransport = (): boolean => {
-    console.log('Validando transporte...', transportSelection);
-    
     const isInternational = isInternationalTrip(selectedOrigin, destination);
     
     if (isInternational) {
-      // Validación para vuelos internacionales
       if (!flightSelection.airline) {
         showToast('Por favor selecciona una aerolínea', 'error');
         return false;
@@ -583,34 +507,26 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
         showToast('Por favor selecciona la clase de vuelo', 'error');
         return false;
       }
-      
-      // Validación para transporte local en destino
       if (!localTransportSelection.mode) {
-        showToast('Por favor selecciona el modo de transporte local (Automático o Manual)', 'error');
+        showToast('Por favor selecciona el modo de transporte local', 'error');
         return false;
       }
-      
       if (localTransportSelection.mode === 'manual') {
         if (!localTransportSelection.localTransportType) {
           showToast('Por favor selecciona el tipo de transporte en el destino', 'error');
           return false;
         }
-        
         if (localTransportSelection.localTransportType === 'rental' && !localTransportSelection.selectedRentalCar) {
           showToast('Por favor selecciona un vehículo de alquiler', 'error');
           return false;
         }
       }
-      
       return true;
     } else {
-      // Validación para transporte terrestre
       if (transportSelection.hasVehicle === null) {
         showToast('Por favor selecciona una opción de transporte', 'error');
         return false;
       }
-      
-      // Si eligió no tener vehículo, debe seleccionar una alternativa
       if (transportSelection.hasVehicle === false) {
         const hasRentVehicle = transportSelection.rentVehicle;
         const hasPublicTransport = transportSelection.transportType === 'public';
@@ -620,53 +536,37 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
           showToast('Por favor selecciona tu método de transporte preferido', 'error');
           return false;
         }
-        
-        // Si eligió alquiler, debe seleccionar un vehículo
         if (hasRentVehicle && !transportSelection.selectedVehicle) {
           showToast('Por favor selecciona un vehículo de alquiler', 'error');
           return false;
         }
       }
-      
       return true;
     }
   };
 
-  // --- FUNCIÓN PRINCIPAL PARA FORZAR ORIGEN OBLIGATORIO ---
   const handleStartPlanning = () => {
-    console.log('Iniciando planificación...');
-    console.log('Origen actual:', selectedOrigin);
-    
     if (!selectedOrigin) {
-      console.log('Forzando modal de origen');
       setShowOriginModal(true);
       return;
     }
-    
-    // Si ya tiene origen, validar el resto del formulario
     if (validateForm()) {
       handleGeneratePlans();
     }
   };
 
   const handleNext = () => {
-    console.log('Navegando desde vista:', currentView);
-    
     switch (currentView) {
       case 'planning':
-        // Para la vista de planificación, usar handleStartPlanning
         handleStartPlanning();
         break;
       case 'transport':
-        console.log('Validando transporte antes de continuar');
         if (validateTransport()) {
-          console.log('Transporte validado - yendo a selección');
           setCurrentView('selection');
         }
         break;
       case 'selection':
         if (selectedPlan) {
-          console.log('Plan seleccionado - generando itinerario:', selectedPlan);
           generateItineraryFromPlan(selectedPlan);
           setCurrentView('building');
         } else {
@@ -701,10 +601,7 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     }
   };
 
-  // --- GENERACIÓN DE PLANES CORREGIDA ---
   const handleGeneratePlans = async () => {
-    console.log('Generando planes...');
-    
     if (!validateForm()) return;
 
     setIsGenerating(true);
@@ -724,10 +621,7 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
         interests: selectedCategories
       };
 
-      console.log('Input para generar planes:', planInput);
       const plans = await generateThreePlans(planInput);
-      console.log('Planes generados:', plans);
-      
       setGeneratedPlans(plans);
       
       if (onShowPlans) {
@@ -735,9 +629,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
       }
       
       showToast('¡Planes generados exitosamente!', 'success');
-      
-      // IMPORTANTE: Ir a transporte después de generar planes
-      console.log('Cambiando a vista de transporte');
       setCurrentView('transport');
       
     } catch (error) {
@@ -748,30 +639,20 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     }
   };
 
-  // --- SELECCIÓN DE PLAN CORREGIDA ---
   const handleSelectPlan = (plan: SimplePlan) => {
-    console.log('Seleccionando plan:', plan);
     setSelectedPlan(plan);
     showToast(`Plan "${plan.name}" seleccionado`, 'success');
   };
 
-  // --- GENERACIÓN DE ITINERARIO CORREGIDA ---
   const generateItineraryFromPlan = (plan: SimplePlan) => {
-    console.log('Generando itinerario desde plan:', plan);
-    
-    // CORRECCIÓN: Calcular duration desde las fechas ya que no existe en SimplePlan
     const startDateObj = new Date(startDate);
     const endDateObj = new Date(endDate);
     const dayCount = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24));
     
     const newDayPlans: DayPlan[] = [];
-
-    // Generar actividades específicas para el tier del plan
     const activitiesByTier = generateActivitiesByTier(plan.tier, destination);
-    console.log('Actividades generadas para tier', plan.tier, ':', activitiesByTier);
     setAvailableActivities(activitiesByTier);
 
-    // Crear días vacíos
     for (let i = 0; i < dayCount; i++) {
       const currentDate = new Date(startDateObj);
       currentDate.setDate(startDateObj.getDate() + i);
@@ -785,14 +666,11 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
       });
     }
 
-    console.log('Días creados:', newDayPlans);
     setDayPlans(newDayPlans);
     showToast('Itinerario inicial creado. ¡Empieza a planificar!', 'success');
   };
 
   const generateActivitiesByTier = (tier: string, destination: string): EnhancedActivity[] => {
-    console.log('Generando actividades para tier:', tier);
-    
     const baseActivities: EnhancedActivity[] = [
       {
         id: generateUniqueId('activity'),
@@ -871,7 +749,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
       }
     ];
 
-    // CORRECCIÓN: Usar valores correctos de tier
     if (tier === 'intermedio' || tier === 'premium') {
       baseActivities.push({
         id: generateUniqueId('activity'),
@@ -908,12 +785,10 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
       });
     }
 
-    console.log('Actividades generadas:', baseActivities);
     return baseActivities;
   };
 
-  // --- FUNCIONES NUEVAS PASO 1: GUARDAR Y PROCEDER AL PAGO - CORREGIDAS ---
-  const handleSaveTrip = async () => {
+const handleSaveTrip = async () => {
     if (!selectedPlan || !selectedOrigin) {
       showToast('Debes seleccionar un plan y origen para guardar', 'error');
       return;
@@ -921,17 +796,15 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
 
     setIsSaving(true);
     try {
-      // Calcular duración del viaje
       const startDateObj = new Date(startDate);
       const endDateObj = new Date(endDate);
       const duration = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24));
 
-      // CORRECCIÓN PRINCIPAL: Crear objeto de viaje con TODAS las propiedades requeridas
       const tripData = {
         name: `Viaje a ${destination}`,
         destination: {
           name: destination,
-          country: destination // Usar el destino como país (puede mejorarse con lógica adicional)
+          country: destination
         },
         origin: {
           city: selectedOrigin.city,
@@ -941,7 +814,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
         startDate,
         endDate,
         duration,
-        // PROPIEDAD FALTANTE AGREGADA:
         dates: {
           startDate,
           endDate
@@ -958,25 +830,19 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
         },
         interests: selectedCategories,
         selectedPlan: selectedPlan,
-        plan: selectedPlan, // Alias para compatibilidad
+        plan: selectedPlan,
         itinerary: dayPlans,
         transport: transportSelection,
         status: 'planning' as const,
-        // Campos opcionales calculados
         totalCost: totalBudgetUsed,
         notes: `Viaje generado automáticamente con TripWase`,
         isArchived: false
       };
 
-      console.log('Guardando viaje con datos completos:', tripData);
-      
-      // Guardar en TripContext
       await saveTrip(tripData);
-      
       setTripSaved(true);
       showToast('¡Viaje guardado exitosamente!', 'success');
       
-      // Agregar notificación al contexto - SIN id ni timestamp
       addNotification({
         type: 'success',
         title: 'Viaje Guardado',
@@ -984,7 +850,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
         read: false
       });
 
-      // Navegar al dashboard después de un breve delay
       setTimeout(() => {
         navigate('/dashboard');
       }, 1500);
@@ -1005,17 +870,8 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
 
     setIsProcessingPayment(true);
     try {
-      // Simular procesamiento de pago
-      console.log('Procesando pago para plan:', selectedPlan);
-      
-      // Aquí iría la lógica de integración con pasarela de pagos
-      // Por ahora simulamos con un delay
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
       showToast('Redirigiendo a página de pago...', 'success');
-      
-      // TODO: Implementar navegación a checkout
-      // navigate('/checkout', { state: { plan: selectedPlan, tripData: /* datos del viaje */ } });
       
       addNotification({
         type: 'info',
@@ -1032,13 +888,10 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     }
   };
 
-  // NUEVA FUNCIÓN: Selección automática de transporte
   const handleAutoModeSelection = () => {
-    // Seleccionar automáticamente la mejor opción según el presupuesto
     const duration = Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24));
     const budgetPerDay = budget / duration;
     
-    // Automático: aerolínea con mejor relación precio-calidad
     const sortedAirlines = sortAirlinesByPreference(AIRLINES_DATABASE);
     const bestAirline = sortedAirlines.find(airline => airline.rating >= 4.0) || sortedAirlines[0];
     const autoClass = budgetPerDay > 200 ? 'negocios' : 'turista';
@@ -1050,9 +903,7 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
       estimatedCost: autoCost
     });
     
-    // Automático: transporte local según presupuesto
     if (budgetPerDay > 100) {
-      // Presupuesto alto: rental car intermedio
       const autoCar = RENTAL_CARS_DATABASE.find(car => car.category === 'intermedio') || RENTAL_CARS_DATABASE[4];
       setLocalTransportSelection({
         mode: 'auto',
@@ -1061,7 +912,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
         publicTransportBudget: 150
       });
     } else {
-      // Presupuesto bajo: transporte público
       setLocalTransportSelection({
         mode: 'auto',
         localTransportType: 'public',
@@ -1073,7 +923,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     showToast('Selección automática completada', 'success');
   };
 
-  // --- DETECCIÓN DE CONFLICTOS ---
   const detectTimeConflicts = (activities: EnhancedActivity[]): TimeConflict[] => {
     const conflicts: TimeConflict[] = [];
     
@@ -1112,11 +961,11 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     return conflicts;
   };
 
-  // --- MANEJO DE ACTIVIDADES ---
+  // ✅ CORRECCIÓN 1 APLICADA: addActivityToDay con generateUniqueId
   const addActivityToDay = (dayId: string, activity: EnhancedActivity) => {
     const newActivity: EnhancedActivity = {
       ...activity,
-      id: generateUniqueId('scheduled'),
+      id: generateUniqueId('scheduled'), // ✅ ID único generado
       startTime: TIME_RULES[activity.category]?.defaultTime || activity.startTime,
       isTimeFixed: TIME_RULES[activity.category]?.isFixed ?? activity.isTimeFixed
     };
@@ -1182,9 +1031,11 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     showToast('Hora actualizada', 'success');
   };
 
-  // --- DRAG & DROP ---
+  // ✅ CORRECCIÓN 3 APLICADA: Sensors con activationConstraint
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 3 } }),
+    useSensor(PointerSensor, { 
+      activationConstraint: { distance: 8 } // ✅ Requiere 8px de movimiento
+    }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
@@ -1261,7 +1112,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     }
   };
 
-  // Vehículos disponibles
   const vehicleOptions: VehicleOption[] = [
     {
       id: 'economy',
@@ -1301,17 +1151,14 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     }
   ];
 
-  // --- CÁLCULO DE PRESUPUESTO MEJORADO ---
   const totalBudgetUsed = useMemo(() => {
     const planCost = selectedPlan?.totalCost || 0;
     const isInternational = isInternationalTrip(selectedOrigin, destination);
     
     let transportCost = 0;
     if (isInternational) {
-      // Costo de vuelo internacional
       transportCost += flightSelection.estimatedCost || 0;
       
-      // Costo de transporte local en destino
       if (localTransportSelection.localTransportType === 'rental' && localTransportSelection.selectedRentalCar) {
         const duration = Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24));
         transportCost += localTransportSelection.selectedRentalCar.pricePerDay * duration;
@@ -1319,7 +1166,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
         transportCost += localTransportSelection.publicTransportBudget;
       }
     } else {
-      // Costo de transporte terrestre (existente)
       transportCost = transportSelection.selectedVehicle?.pricePerDay || 0;
     }
     
@@ -1335,10 +1181,8 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     currentView === 'building' ? 'Itinerario' : 'Resumen'
   );
 
-  // ===================================================================
-  // SUB-COMPONENTES INTERNOS
-  // ===================================================================
-  
+
+// SUB-COMPONENTE: EnhancedSortableActivity
   const EnhancedSortableActivity: React.FC<{ 
     activity: EnhancedActivity; 
     isDragOverlay?: boolean;
@@ -1467,6 +1311,7 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     );
   };
   
+  // SUB-COMPONENTE: DroppableDay
   const DroppableDay: React.FC<{ day: DayPlan }> = React.memo(({ day }) => {
     const { setNodeRef, isOver } = useDroppable({ 
       id: day.id,
@@ -1506,7 +1351,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
           ${dayConflicts.length > 0 ? 'border-red-300 shadow-red-100' : ''}
         `}
       >
-        {/* Decorative elements */}
         <div className="absolute top-4 right-4 w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full opacity-10"></div>
         <div className="absolute bottom-4 left-4 w-8 h-8 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full opacity-10"></div>
 
@@ -1576,10 +1420,7 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     );
   });
 
-  // ===================================================================
-  // VISTAS MEJORADAS
-  // ===================================================================
-  
+// VISTA: Planning
   const renderPlanningView = () => (
     <div className="planning-view space-y-8">
       <div className="text-center mb-8">
@@ -1595,7 +1436,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
       </div>
 
       <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
-        {/* Origen */}
         <div className="form-group">
           <label className="block text-sm font-semibold text-gray-700 mb-3">
             <MapPin className="w-5 h-5 inline mr-2 text-blue-600" />
@@ -1624,7 +1464,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
           </button>
         </div>
 
-        {/* Destino */}
         <div className="form-group">
           <label className="block text-sm font-semibold text-gray-700 mb-3">
             <Navigation className="w-5 h-5 inline mr-2 text-purple-600" />
@@ -1647,7 +1486,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
           </div>
         </div>
 
-        {/* Fechas */}
         <div className="form-group">
           <label className="block text-sm font-semibold text-gray-700 mb-3">
             <Calendar className="w-5 h-5 inline mr-2 text-green-600" />
@@ -1676,7 +1514,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
           />
         </div>
 
-        {/* Viajeros */}
         <div className="form-group">
           <label className="block text-sm font-semibold text-gray-700 mb-3">
             <Users className="w-5 h-5 inline mr-2 text-orange-600" />
@@ -1692,7 +1529,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
           />
         </div>
 
-        {/* Presupuesto */}
         <div className="form-group">
           <label className="block text-sm font-semibold text-gray-700 mb-3">
             <DollarSign className="w-5 h-5 inline mr-2 text-green-600" />
@@ -1719,7 +1555,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
         </div>
       </div>
 
-      {/* Intereses */}
       <div className="max-w-4xl mx-auto">
         <label className="block text-sm font-semibold text-gray-700 mb-4">
           <Star className="w-5 h-5 inline mr-2 text-yellow-600" />
@@ -1785,9 +1620,8 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     </div>
   );
 
-  // FUNCIÓN PRINCIPAL: renderTransportView MEJORADA CON TRANSPORTE INTELIGENTE
+  // VISTA: Transport (PRIMERA PARTE - detección internacional y vuelos)
   const renderTransportView = () => {
-    // Detectar si es viaje internacional
     const isInternational = isInternationalTrip(selectedOrigin, destination);
     const sortedAirlines = sortAirlinesByPreference(AIRLINES_DATABASE);
     
@@ -1806,7 +1640,7 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
             )}
           </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            {isInternational ? '✈️ Opciones de Vuelo' : '🚗 ¿Cómo te moverás?'}
+            {isInternational ? 'Opciones de Vuelo' : 'Transporte'}
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             {isInternational 
@@ -1817,9 +1651,8 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
         </div>
 
         {isInternational ? (
-          // ===== NUEVA SECCIÓN: OPCIONES DE VUELO =====
           <div className="flight-options space-y-8">
-            {/* Selector de Clase */}
+            {/* Selector de Clase de Vuelo */}
             <div className="class-selector max-w-4xl mx-auto">
               <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Selecciona tu clase de viaje</h3>
               <div className="grid md:grid-cols-3 gap-6">
@@ -1847,13 +1680,13 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
               </div>
             </div>
 
-            {/* Lista de Aerolíneas */}
+{/* Lista de Aerolíneas */}
             <div className="airlines-list max-w-6xl mx-auto">
               <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
                 Aerolíneas disponibles
                 {favoriteAirlineId && (
                   <span className="text-sm font-normal text-blue-600 block mt-2">
-                    ⭐ Tu favorita aparece primero
+                    Tu favorita aparece primero
                   </span>
                 )}
               </h3>
@@ -1882,14 +1715,12 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
                         }));
                       }}
                     >
-                      {/* Badge de Favorita */}
                       {isFavorite && (
                         <div className="absolute -top-3 -right-3 bg-yellow-500 text-white rounded-full p-2">
                           <Star className="w-4 h-4 fill-current" />
                         </div>
                       )}
 
-                      {/* Cabecera de Aerolínea */}
                       <div className="airline-header mb-4 text-center">
                         <div className="text-4xl mb-2">{airline.logo}</div>
                         <h4 className="font-bold text-lg text-gray-900">{airline.name}</h4>
@@ -1904,7 +1735,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
                         </div>
                       </div>
 
-                      {/* Precio Dinámico */}
                       <div className="price-display mb-4 text-center">
                         <div className="text-3xl font-bold text-green-600">
                           ${estimatedCost.toLocaleString()}
@@ -1914,7 +1744,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
                         </div>
                       </div>
 
-                      {/* Características */}
                       <div className="features mb-4">
                         <p className="text-sm font-semibold text-gray-700 mb-3">Incluye:</p>
                         <div className="space-y-2">
@@ -1927,7 +1756,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
                         </div>
                       </div>
 
-                      {/* Botón de Favorita */}
                       <div className="actions flex items-center justify-between">
                         <button
                           onClick={(e) => {
@@ -1954,7 +1782,7 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
                         {isSelected && (
                           <div className="flex items-center space-x-2 text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
                             <CheckCircle className="w-5 h-5" />
-                            <span className="font-bold text-sm">¡Seleccionada!</span>
+                            <span className="font-bold text-sm">Seleccionada</span>
                           </div>
                         )}
                       </div>
@@ -1964,55 +1792,18 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
               </div>
             </div>
 
-            {/* Resumen de Selección de Vuelo */}
-            {flightSelection.airline && (
-              <div className="flight-summary max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-purple-50 p-8 rounded-2xl border-2 border-blue-200">
-                <h3 className="text-2xl font-bold text-blue-800 mb-4 text-center">
-                  ✈️ Resumen de tu vuelo
-                </h3>
-                <div className="grid md:grid-cols-3 gap-6 text-center">
-                  <div>
-                    <div className="text-4xl mb-2">{flightSelection.airline.logo}</div>
-                    <h4 className="font-bold text-lg">{flightSelection.airline.name}</h4>
-                    <p className="text-sm text-gray-600">Aerolínea seleccionada</p>
-                  </div>
-                  <div>
-                    <div className="text-4xl mb-2">
-                      {flightSelection.class === 'turista' ? '💺' : flightSelection.class === 'negocios' ? '💼' : '👑'}
-                    </div>
-                    <h4 className="font-bold text-lg capitalize">{flightSelection.class}</h4>
-                    <p className="text-sm text-gray-600">Clase de servicio</p>
-                  </div>
-                  <div>
-                    <div className="text-4xl mb-2 text-green-600 font-bold">
-                      ${flightSelection.estimatedCost.toLocaleString()}
-                    </div>
-                    <h4 className="font-bold text-lg">Costo estimado</h4>
-                    <p className="text-sm text-gray-600">Para {travelers} viajero(s)</p>
-                  </div>
-                </div>
-                
-                <div className="mt-6 text-center">
-                  <p className="text-sm text-blue-700 bg-blue-100 inline-block px-4 py-2 rounded-full">
-                    💡 El precio final puede variar según fechas y disponibilidad
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* NUEVA SECCIÓN: TRANSPORTE LOCAL EN DESTINO */}
+            {/* Transporte Local en Destino */}
             {flightSelection.airline && (
               <div className="local-transport-section space-y-8">
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    🚗 Transporte en {destination}
+                    Transporte en {destination}
                   </h3>
                   <p className="text-gray-600">
                     ¿Cómo te moverás una vez que llegues a tu destino?
                   </p>
                 </div>
 
-                {/* Modo Automático vs Manual */}
                 <div className="mode-selector max-w-2xl mx-auto mb-8">
                   <h4 className="text-lg font-semibold text-gray-800 mb-4 text-center">
                     Elige tu modo de selección
@@ -2032,15 +1823,31 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
                       `}
                     >
                       <div className="text-4xl mb-3">🤖</div>
+                      <h5 className="font-bold text-lg mb-2">Automático</h5>
+                      <p className="text-sm text-gray-600">
+                        Seleccionamos lo mejor para ti
+                      </p>
+                    </button>
+
+                    <button
+                      onClick={() => setLocalTransportSelection(prev => ({ ...prev, mode: 'manual' }))}
+                      className={`
+                        p-6 border-2 rounded-xl text-center transition-all hover:shadow-lg
+                        ${localTransportSelection.mode === 'manual'
+                          ? 'border-green-500 bg-green-50 text-green-700 shadow-lg'
+                          : 'border-gray-300 hover:border-green-400'
+                        }
+                      `}
+                    >
+                      <div className="text-4xl mb-3">👤</div>
                       <h5 className="font-bold text-lg mb-2">Manual</h5>
                       <p className="text-sm text-gray-600">
-                        Tú eliges cada detalle del transporte
+                        Tú eliges cada detalle
                       </p>
                     </button>
                   </div>
                 </div>
 
-                {/* Selección Manual de Tipo de Transporte */}
                 {localTransportSelection.mode === 'manual' && (
                   <div className="manual-transport-selection space-y-6">
                     <div className="transport-type-selector max-w-2xl mx-auto">
@@ -2065,7 +1872,7 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
                           <div className="text-4xl mb-3">🚗</div>
                           <h5 className="font-bold text-lg mb-2">Rental Car</h5>
                           <p className="text-sm text-gray-600">
-                            Alquila un vehículo en el destino
+                            Alquila un vehículo
                           </p>
                         </button>
 
@@ -2086,250 +1893,10 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
                           <div className="text-4xl mb-3">🚌</div>
                           <h5 className="font-bold text-lg mb-2">Transporte Público</h5>
                           <p className="text-sm text-gray-600">
-                            Metro, buses y taxis locales
+                            Metro, buses y taxis
                           </p>
                         </button>
                       </div>
-                    </div>
-
-                    {/* Selección Manual de Rental Cars */}
-                    {localTransportSelection.localTransportType === 'rental' && (
-                      <div className="rental-cars-selection max-w-6xl mx-auto">
-                        <h4 className="text-xl font-bold text-gray-900 mb-6 text-center">
-                          Vehículos disponibles en {destination}
-                        </h4>
-                        
-                        {/* Filtros por categoría */}
-                        <div className="categories-filter mb-6 flex flex-wrap justify-center gap-2">
-                          {['economico', 'compacto', 'intermedio', 'suv', 'lujo', 'premium'].map(category => (
-                            <button
-                              key={category}
-                              className="px-4 py-2 border border-gray-300 rounded-full text-sm hover:bg-gray-50 transition-colors capitalize"
-                              onClick={() => {
-                                const firstCar = RENTAL_CARS_DATABASE.find(car => car.category === category);
-                                if (firstCar) {
-                                  setLocalTransportSelection(prev => ({ ...prev, selectedRentalCar: firstCar }));
-                                }
-                              }}
-                            >
-                              {category}
-                            </button>
-                          ))}
-                        </div>
-
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                          {RENTAL_CARS_DATABASE.map((car) => {
-                            const isSelected = localTransportSelection.selectedRentalCar?.id === car.id;
-                            
-                            return (
-                              <div
-                                key={car.id}
-                                className={`
-                                  rental-car-card p-6 border-2 rounded-2xl cursor-pointer transition-all hover:shadow-xl transform hover:-translate-y-1
-                                  ${isSelected 
-                                    ? 'border-green-500 bg-gradient-to-br from-green-50 to-blue-50 shadow-xl scale-105' 
-                                    : 'border-gray-200 hover:border-gray-300 bg-white'
-                                  }
-                                `}
-                                onClick={() => setLocalTransportSelection(prev => ({ 
-                                  ...prev, 
-                                  selectedRentalCar: car 
-                                }))}
-                              >
-                                {/* Badge de categoría */}
-                                <div className={`
-                                  inline-block px-3 py-1 rounded-full text-xs font-bold mb-4
-                                  ${car.category === 'economico' ? 'bg-blue-100 text-blue-700' :
-                                    car.category === 'compacto' ? 'bg-green-100 text-green-700' :
-                                    car.category === 'intermedio' ? 'bg-yellow-100 text-yellow-700' :
-                                    car.category === 'suv' ? 'bg-purple-100 text-purple-700' :
-                                    car.category === 'lujo' ? 'bg-red-100 text-red-700' :
-                                    'bg-gray-100 text-gray-700'
-                                  }
-                                `}>
-                                  {car.category.toUpperCase()}
-                                </div>
-
-                                {/* Imagen del vehículo */}
-                                <div className="car-image mb-4 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
-                                  <div className="text-4xl">🚗</div>
-                                </div>
-
-                                {/* Información del vehículo */}
-                                <div className="car-info mb-4">
-                                  <h5 className="font-bold text-lg text-gray-900 mb-1">{car.model}</h5>
-                                  <p className="text-sm text-gray-600 mb-2">{car.company}</p>
-                                  
-                                  <div className="flex items-center space-x-1 mb-3">
-                                    {[...Array(5)].map((_, i) => (
-                                      <Star 
-                                        key={i} 
-                                        className={`w-4 h-4 ${i < Math.floor(car.rating) ? 'text-yellow-500 fill-current' : 'text-gray-300'}`}
-                                      />
-                                    ))}
-                                    <span className="text-sm text-gray-600 ml-2">{car.rating}</span>
-                                  </div>
-
-                                  <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">Precio/día:</span>
-                                      <span className="font-bold text-green-600">${car.pricePerDay}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">Pasajeros:</span>
-                                      <span>{car.passengers}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">Equipaje:</span>
-                                      <span>{car.luggage} maletas</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">Transmisión:</span>
-                                      <span className="capitalize">{car.transmission}</span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Características */}
-                                <div className="features mb-4">
-                                  <p className="text-xs font-semibold text-gray-700 mb-2">Incluye:</p>
-                                  <div className="space-y-1">
-                                    {car.features.slice(0, 3).map((feature, index) => (
-                                      <div key={index} className="flex items-center space-x-2 text-xs text-gray-600">
-                                        <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
-                                        <span>{feature}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                {isSelected && (
-                                  <div className="selected-indicator flex items-center justify-center space-x-2 text-green-600 bg-green-100 py-2 rounded-lg">
-                                    <CheckCircle className="w-5 h-5" />
-                                    <span className="font-bold text-sm">¡Seleccionado!</span>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Selección Manual de Transporte Público */}
-                    {localTransportSelection.localTransportType === 'public' && (
-                      <div className="public-transport-selection max-w-2xl mx-auto text-center">
-                        <div className="p-8 bg-orange-50 border-2 border-orange-200 rounded-2xl">
-                          <div className="text-6xl mb-4">🚌</div>
-                          <h4 className="text-2xl font-bold text-orange-800 mb-4">
-                            Transporte Público en {destination}
-                          </h4>
-                          <p className="text-orange-700 mb-6">
-                            Usarás el sistema de transporte público local. Económico, ecológico y auténtico.
-                          </p>
-                          
-                          <div className="bg-white p-6 rounded-lg border border-orange-200 space-y-4">
-                            <h5 className="font-bold text-gray-800">Incluye:</h5>
-                            <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
-                              <div className="flex items-center space-x-2">
-                                <CheckCircle className="w-4 h-4 text-orange-500" />
-                                <span>Pases de transporte</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <CheckCircle className="w-4 h-4 text-orange-500" />
-                                <span>Mapas de rutas</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <CheckCircle className="w-4 h-4 text-orange-500" />
-                                <span>Apps recomendadas</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <CheckCircle className="w-4 h-4 text-orange-500" />
-                                <span>Guía de uso</span>
-                              </div>
-                            </div>
-                            
-                            <div className="text-center mt-4">
-                              <div className="text-2xl font-bold text-green-600 mb-1">
-                                ${localTransportSelection.publicTransportBudget}
-                              </div>
-                              <p className="text-sm text-gray-600">Presupuesto estimado total</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Resumen de Selección Automática */}
-                {localTransportSelection.mode === 'auto' && (
-                  <div className="auto-selection-summary max-w-4xl mx-auto bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-2xl border-2 border-purple-200">
-                    <h4 className="text-2xl font-bold text-purple-800 mb-6 text-center">
-                      🤖 Selección Automática Completada
-                    </h4>
-                    
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {/* Resumen de vuelo */}
-                      <div className="bg-white p-6 rounded-xl border border-purple-200">
-                        <h5 className="font-bold text-lg text-purple-800 mb-4 flex items-center">
-                          ✈️ Tu Vuelo
-                        </h5>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Aerolínea:</span>
-                            <span className="font-medium">{flightSelection.airline?.name}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Clase:</span>
-                            <span className="font-medium capitalize">{flightSelection.class}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Costo:</span>
-                            <span className="font-bold text-green-600">${flightSelection.estimatedCost}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Resumen de transporte local */}
-                      <div className="bg-white p-6 rounded-xl border border-purple-200">
-                        <h5 className="font-bold text-lg text-purple-800 mb-4 flex items-center">
-                          🚗 Transporte Local
-                        </h5>
-                        {localTransportSelection.localTransportType === 'rental' && localTransportSelection.selectedRentalCar ? (
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Vehículo:</span>
-                              <span className="font-medium">{localTransportSelection.selectedRentalCar.model}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Compañía:</span>
-                              <span className="font-medium">{localTransportSelection.selectedRentalCar.company}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Precio/día:</span>
-                              <span className="font-bold text-green-600">${localTransportSelection.selectedRentalCar.pricePerDay}</span>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Tipo:</span>
-                              <span className="font-medium">Transporte Público</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Presupuesto:</span>
-                              <span className="font-bold text-green-600">${localTransportSelection.publicTransportBudget}</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="text-center mt-6">
-                      <p className="text-sm text-purple-700 bg-purple-100 inline-block px-4 py-2 rounded-full">
-                        🤖 Selección optimizada según tu presupuesto de ${budget} {currency}
-                      </p>
                     </div>
                   </div>
                 )}
@@ -2337,9 +1904,8 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
             )}
           </div>
         ) : (
-          // ===== SECCIÓN EXISTENTE: TRANSPORTE TERRESTRE MEJORADO =====
+          // Transporte terrestre para viajes domésticos
           <div className="ground-transport">
-            {/* Pregunta principal expandida */}
             <div className="max-w-4xl mx-auto mb-8">
               <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center">¿Cómo prefieres moverte?</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -2409,13 +1975,9 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
                     }
                   `}
                 >
-                  <div className="text-4xl mb-3">
-                    <div className="w-12 h-12 mx-auto bg-purple-600 rounded-lg flex items-center justify-center text-white text-lg font-bold">
-                      🚌
-                    </div>
-                  </div>
+                  <div className="text-4xl mb-3">🚌</div>
                   <div className="font-semibold">Público</div>
-                  <div className="text-sm text-gray-600 mt-1">Bus, Metro, Tren</div>
+                  <div className="text-sm text-gray-600 mt-1">Bus, Metro</div>
                 </button>
 
                 <button
@@ -2436,33 +1998,13 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
                     }
                   `}
                 >
-                  <div className="text-4xl mb-3">
-                    <div className="w-12 h-12 mx-auto bg-yellow-500 rounded-lg flex items-center justify-center text-white text-lg font-bold">
-                      🚕
-                    </div>
-                  </div>
+                  <div className="text-4xl mb-3">🚕</div>
                   <div className="font-semibold">Taxi/Uber</div>
                   <div className="text-sm text-gray-600 mt-1">Ride-sharing</div>
                 </button>
               </div>
             </div>
 
-            {/* Confirmación de vehículo propio */}
-            {transportSelection.hasVehicle === true && (
-              <div className="max-w-2xl mx-auto text-center">
-                <div className="p-8 bg-green-50 border-2 border-green-200 rounded-2xl">
-                  <div className="text-6xl mb-4">
-                    <CheckCircle className="w-16 h-16 text-green-600 mx-auto" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-green-800 mb-2">¡Perfecto!</h3>
-                  <p className="text-green-700">
-                    Usarás tu vehículo propio para el viaje. Esto te dará total flexibilidad y reducirá los costos.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Opciones de alquiler */}
             {transportSelection.hasVehicle === false && transportSelection.rentVehicle && (
               <div className="max-w-6xl mx-auto">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Vehículos disponibles</h3>
@@ -2499,32 +2041,12 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
                           <span className="text-gray-600">Equipaje:</span>
                           <span className="font-medium">{vehicle.luggage} maletas</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Combustible:</span>
-                          <span className="font-medium capitalize">{vehicle.fuelType}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Transmisión:</span>
-                          <span className="font-medium capitalize">{vehicle.transmission}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="features">
-                        <p className="text-sm font-semibold text-gray-700 mb-3">Incluye:</p>
-                        <div className="grid grid-cols-1 gap-2">
-                          {vehicle.features.map((feature, index) => (
-                            <div key={index} className="flex items-center space-x-2 text-xs text-gray-600">
-                              <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                              <span>{feature}</span>
-                            </div>
-                          ))}
-                        </div>
                       </div>
                       
                       {transportSelection.selectedVehicle?.id === vehicle.id && (
                         <div className="selected-indicator mt-6 flex items-center justify-center space-x-2 text-blue-600 bg-blue-100 py-3 rounded-xl">
                           <CheckCircle className="w-6 h-6" />
-                          <span className="font-bold">¡Seleccionado!</span>
+                          <span className="font-bold">Seleccionado</span>
                         </div>
                       )}
                     </div>
@@ -2532,61 +2054,13 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
                 </div>
               </div>
             )}
-
-            {/* Resumen de transporte público */}
-            {transportSelection.hasVehicle === false && transportSelection.rentVehicle === false && transportSelection.transportType === 'public' && (
-              <div className="max-w-2xl mx-auto text-center">
-                <div className="p-8 bg-purple-50 border-2 border-purple-200 rounded-2xl">
-                  <div className="text-6xl mb-4">
-                    <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl mx-auto">
-                      🚌
-                    </div>
-                  </div>
-                  <h3 className="text-2xl font-bold text-purple-800 mb-2">¡Transporte Público!</h3>
-                  <p className="text-purple-700 mb-4">
-                    Usarás el sistema de transporte público. Económico y sostenible.
-                  </p>
-                  <div className="bg-white p-4 rounded-lg border border-purple-200 text-sm text-purple-700">
-                    <strong>Incluye:</strong> Pases de metro/bus, mapas de rutas, aplicaciones recomendadas
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Resumen de taxi/uber */}
-            {transportSelection.hasVehicle === false && transportSelection.rentVehicle === false && transportSelection.transportType === 'taxi' && (
-              <div className="max-w-2xl mx-auto text-center">
-                <div className="p-8 bg-yellow-50 border-2 border-yellow-200 rounded-2xl">
-                  <div className="text-6xl mb-4">
-                    <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center text-white text-2xl mx-auto">
-                      🚕
-                    </div>
-                  </div>
-                  <h3 className="text-2xl font-bold text-yellow-800 mb-2">¡Taxi y Ride-sharing!</h3>
-                  <p className="text-yellow-700 mb-4">
-                    Máxima comodidad con Uber, Lyft y taxis locales. Flexibilidad total.
-                  </p>
-                  <div className="bg-white p-4 rounded-lg border border-yellow-200 text-sm text-yellow-700">
-                    <strong>Incluye:</strong> Códigos de descuento, apps recomendadas, estimaciones de costo
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
-
-        {/* Debug Info */}
-        <div className="mt-8 text-center text-sm text-gray-500">
-          <p>
-            🔍 Detección: {isInternational ? 'Viaje Internacional' : 'Viaje Doméstico'} | 
-            Origen: {selectedOrigin?.country} | 
-            Destino: {destination}
-          </p>
-        </div>
       </div>
     );
   };
 
+  // VISTA: Selection
   const renderSelectionView = () => (
     <div className="selection-view space-y-8">
       <div className="text-center mb-8">
@@ -2601,118 +2075,78 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
         </p>
       </div>
 
-      {generatedPlans.length === 0 ? (
-        <div className="text-center py-16">
-          <Search className="w-24 h-24 text-gray-400 mx-auto mb-6" />
-          <h3 className="text-2xl font-semibold text-gray-700 mb-4">
-            No hay planes generados
-          </h3>
-          <p className="text-gray-500 mb-8 max-w-md mx-auto">
-            Regresa a la planificación para generar tus planes de viaje personalizados
-          </p>
-          <button
-            onClick={() => setCurrentView('planning')}
-            className="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-3 gap-8">
+        {generatedPlans.map((plan, index) => (
+          <div
+            key={plan.id}
+            className={`
+              plan-card relative p-8 border-2 rounded-2xl cursor-pointer transition-all hover:shadow-2xl transform hover:-translate-y-2
+              ${selectedPlan?.id === plan.id 
+                ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-purple-50 shadow-2xl scale-105' 
+                : 'border-gray-200 hover:border-gray-300 bg-white'
+              }
+            `}
+            onClick={() => handleSelectPlan(plan)}
           >
-            Ir a planificación
-          </button>
-        </div>
-      ) : (
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-3 gap-8">
-          {generatedPlans.map((plan, index) => (
-            <div
-              key={plan.id}
-              className={`
-                plan-card relative p-8 border-2 rounded-2xl cursor-pointer transition-all hover:shadow-2xl transform hover:-translate-y-2
-                ${selectedPlan?.id === plan.id 
-                  ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-purple-50 shadow-2xl scale-105' 
-                  : 'border-gray-200 hover:border-gray-300 bg-white'
-                }
-              `}
-              onClick={() => handleSelectPlan(plan)}
-            >
-              {/* Tier Badge */}
-              <div className={`
-                absolute -top-4 left-1/2 transform -translate-x-1/2 px-6 py-2 rounded-full text-sm font-bold text-white shadow-lg
-                ${plan.tier === 'economico' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 
-                  plan.tier === 'intermedio' ? 'bg-gradient-to-r from-blue-500 to-indigo-600' :
-                  'bg-gradient-to-r from-purple-500 to-pink-600'
-                }
-              `}>
-                {plan.tier === 'economico' ? 'Económico' : plan.tier === 'intermedio' ? 'Confort' : 'Premium'}
-              </div>
-
-              {/* Popular badge for middle plan */}
-              {index === 1 && (
-                <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                  Más popular
-                </div>
-              )}
-
-              <div className="plan-header mt-4 mb-6 text-center">
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                  {plan.name}
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  {plan.description}
-                </p>
-                <div className="text-4xl font-bold text-green-600 mb-2">
-                  {currency} {plan.totalCost.toLocaleString()}
-                </div>
-                <p className="text-sm text-gray-500">
-                  {Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))} días increíbles
-                </p>
-              </div>
-
-              {plan.savings && plan.savings > 0 && (
-                <div className="savings-badge mb-6 text-center">
-                  <span className="inline-flex items-center space-x-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full font-semibold">
-                    <Gift className="w-4 h-4" />
-                    <span>Ahorro: {currency} {plan.savings.toLocaleString()}</span>
-                  </span>
-                </div>
-              )}
-
-              <div className="plan-features space-y-4">
-                <div className="feature-item flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-gray-700">Alojamiento: {plan.accommodation.name}</span>
-                </div>
-                <div className="feature-item flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-gray-700">Actividades principales incluidas</span>
-                </div>
-                <div className="feature-item flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-gray-700">Soporte 24/7 durante el viaje</span>
-                </div>
-                {plan.tier !== 'economico' && (
-                  <div className="feature-item flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span className="text-gray-700">Experiencias premium exclusivas</span>
-                  </div>
-                )}
-                {plan.tier === 'premium' && (
-                  <div className="feature-item flex items-center space-x-3">
-                    <Crown className="w-5 h-5 text-yellow-500 flex-shrink-0" />
-                    <span className="text-gray-700">Servicio de concierge personal</span>
-                  </div>
-                )}
-              </div>
-
-              {selectedPlan?.id === plan.id && (
-                <div className="selected-indicator mt-6 flex items-center justify-center space-x-3 text-blue-600 bg-blue-100 py-4 rounded-xl">
-                  <CheckCircle className="w-6 h-6" />
-                  <span className="font-bold text-lg">¡Plan seleccionado!</span>
-                </div>
-              )}
+            <div className={`
+              absolute -top-4 left-1/2 transform -translate-x-1/2 px-6 py-2 rounded-full text-sm font-bold text-white shadow-lg
+              ${plan.tier === 'economico' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 
+                plan.tier === 'intermedio' ? 'bg-gradient-to-r from-blue-500 to-indigo-600' :
+                'bg-gradient-to-r from-purple-500 to-pink-600'
+              }
+            `}>
+              {plan.tier === 'economico' ? 'Económico' : plan.tier === 'intermedio' ? 'Confort' : 'Premium'}
             </div>
-          ))}
-        </div>
-      )}
+
+            {index === 1 && (
+              <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                Más popular
+              </div>
+            )}
+
+            <div className="plan-header mt-4 mb-6 text-center">
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                {plan.name}
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {plan.description}
+              </p>
+              <div className="text-4xl font-bold text-green-600 mb-2">
+                {currency} {plan.totalCost.toLocaleString()}
+              </div>
+              <p className="text-sm text-gray-500">
+                {Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))} días increíbles
+              </p>
+            </div>
+
+            <div className="plan-features space-y-4">
+              <div className="feature-item flex items-center space-x-3">
+                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span className="text-gray-700">Alojamiento: {plan.accommodation.name}</span>
+              </div>
+              <div className="feature-item flex items-center space-x-3">
+                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span className="text-gray-700">Actividades principales incluidas</span>
+              </div>
+              <div className="feature-item flex items-center space-x-3">
+                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span className="text-gray-700">Soporte 24/7 durante el viaje</span>
+              </div>
+            </div>
+
+            {selectedPlan?.id === plan.id && (
+              <div className="selected-indicator mt-6 flex items-center justify-center space-x-3 text-blue-600 bg-blue-100 py-4 rounded-xl">
+                <CheckCircle className="w-6 h-6" />
+                <span className="font-bold text-lg">Plan seleccionado</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 
+  // VISTA: Building (con ✅ CORRECCIÓN 2: sticky sidebar)
   const renderBuildingView = () => (
     <div className="building-view">
       <div className="header mb-8">
@@ -2724,66 +2158,8 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
             Construye tu itinerario
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Arrastra y organiza actividades para crear tu experiencia perfecta. ¡Sin límites de actividades por día!
+            Arrastra y organiza actividades para crear tu experiencia perfecta
           </p>
-        </div>
-
-        {/* Budget & Plan Info */}
-        <div className="flex flex-col lg:flex-row gap-6 mb-8">
-          {/* Budget Tracker */}
-          <div className="flex-1 bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border-2 border-green-200">
-            <h3 className="text-lg font-bold text-green-800 mb-4 flex items-center space-x-2">
-              <DollarSign className="w-6 h-6" />
-              <span>Control de Presupuesto</span>
-            </h3>
-            <div className="flex items-center space-x-4 mb-4">
-              <span className={`text-3xl font-bold ${totalBudgetUsed > budget ? 'text-red-600' : 'text-green-600'}`}>
-                ${totalBudgetUsed.toLocaleString()}
-              </span>
-              <span className="text-gray-500 text-lg">/ ${budget.toLocaleString()}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
-              <div 
-                className={`h-4 rounded-full transition-all ${
-                  totalBudgetUsed > budget ? 'bg-gradient-to-r from-red-500 to-red-600' : 
-                  totalBudgetUsed > budget * 0.8 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 
-                  'bg-gradient-to-r from-green-500 to-emerald-500'
-                }`}
-                style={{ width: `${Math.min((totalBudgetUsed / budget) * 100, 100)}%` }}
-              />
-            </div>
-            <p className="text-sm text-green-700">
-              Incluye plan base + transporte + actividades adicionales
-            </p>
-          </div>
-
-          {/* Selected Plan Info */}
-          {selectedPlan && (
-            <div className="flex-1 bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-2xl border-2 border-blue-200">
-              <h3 className="text-lg font-bold text-blue-800 mb-2">{selectedPlan.name}</h3>
-              <p className="text-blue-700 mb-4">{selectedPlan.description}</p>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-green-600">
-                    {currency} {selectedPlan.totalCost.toLocaleString()}
-                  </div>
-                  <div className="text-sm text-blue-600">
-                    Plan base • {Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))} días
-                  </div>
-                </div>
-                <div className={`
-                  px-4 py-2 rounded-full text-sm font-bold
-                  ${selectedPlan.tier === 'economico' ? 'bg-green-100 text-green-700' : 
-                    selectedPlan.tier === 'intermedio' ? 'bg-blue-100 text-blue-700' :
-                    'bg-purple-100 text-purple-700'
-                  }
-                `}>
-                  {selectedPlan.tier === 'economico' ? 'Económico' : 
-                   selectedPlan.tier === 'intermedio' ? 'Confort' : 'Premium'}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -2794,54 +2170,31 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
         onDragEnd={handleDragEnd}
       >
         <div className="grid lg:grid-cols-4 gap-8">
-          {/* Available Activities Sidebar */}
-          <div className="available-activities bg-white p-6 rounded-2xl shadow-xl border lg:col-span-1">
+          {/* ✅ CORRECCIÓN 2: Sidebar con sticky top-4 */}
+          <div className="lg:col-span-1 sticky top-4 bg-white border-2 border-gray-200 rounded-2xl p-6 shadow-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
             <h3 className="font-bold mb-4 text-2xl flex items-center space-x-3">
               <Gift className="w-7 h-7 text-blue-600" />
               <span>Actividades</span>
             </h3>
             <p className="text-sm text-gray-600 mb-6">
-              Arrastra las actividades a los días de tu preferencia. ¡Puedes agregar tantas como quieras!
+              Arrastra las actividades a los días de tu preferencia
             </p>
             
-            <div className="max-h-[70vh] overflow-y-auto space-y-4 custom-scrollbar">
+            <div className="space-y-4">
               {availableActivities.map(activity => (
                 <EnhancedSortableActivity 
                   key={activity.id} 
                   activity={activity}
                 />
               ))}
-              
-              {availableActivities.length === 0 && (
-                <div className="text-center py-12 text-gray-400">
-                  <Plus className="w-12 h-12 mx-auto mb-4" />
-                  <p className="text-sm">No hay actividades disponibles</p>
-                  <p className="text-xs mt-2">Selecciona un plan primero</p>
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Days Grid */}
           <div className="itinerary-builder lg:col-span-3">
             <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
               {dayPlans.map(day => (
                 <DroppableDay key={day.id} day={day} />
               ))}
-              
-              {dayPlans.length === 0 && (
-                <div className="col-span-full text-center py-16">
-                  <Calendar className="w-20 h-20 text-gray-400 mx-auto mb-6" />
-                  <h3 className="text-2xl font-semibold text-gray-700 mb-4">No hay días planificados</h3>
-                  <p className="text-gray-500 mb-6">Regresa a la selección para elegir un plan</p>
-                  <button
-                    onClick={() => setCurrentView('selection')}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
-                  >
-                    Seleccionar Plan
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -2859,6 +2212,7 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     </div>
   );
 
+// VISTA: Summary
   const renderSummaryView = () => {
     const totalDuration = dayPlans.reduce((sum, day) => sum + day.totalDuration, 0);
     const totalActivities = dayPlans.reduce((sum, day) => sum + day.activities.length, 0);
@@ -2870,14 +2224,13 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
             <CheckCircle className="w-10 h-10 text-white" />
           </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            ¡Tu viaje está listo!
+            Tu viaje está listo
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Tu itinerario personalizado ha sido creado con amor y está listo para vivir
+            Tu itinerario personalizado ha sido creado y está listo para vivir
           </p>
         </div>
 
-        {/* Trip Overview */}
         <div className="trip-overview bg-gradient-to-br from-blue-50 to-purple-50 p-8 rounded-2xl border-2 border-blue-200">
           <div className="grid md:grid-cols-4 gap-6 text-center">
             <div className="stat-card">
@@ -2903,7 +2256,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
           </div>
         </div>
 
-        {/* Detailed Itinerary */}
         <div className="detailed-itinerary space-y-6">
           <h3 className="text-3xl font-bold text-gray-900 mb-6 text-center">Tu Itinerario Detallado</h3>
           
@@ -2976,7 +2328,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
           ))}
         </div>
 
-        {/* Action Buttons - PASO 1 NUEVOS */}
         <div className="action-buttons flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6 pt-8">
           <button
             onClick={() => setCurrentView('building')}
@@ -2986,7 +2337,6 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
             Editar itinerario
           </button>
           
-          {/* BOTÓN GUARDAR VIAJE - NUEVO */}
           <button
             onClick={handleSaveTrip}
             disabled={isSaving || !selectedPlan}
@@ -3000,12 +2350,11 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
             ) : (
               <span className="flex items-center space-x-2">
                 <Save className="w-5 h-5" />
-                <span>{tripSaved ? '¡Guardado!' : 'Guardar viaje'}</span>
+                <span>{tripSaved ? 'Guardado' : 'Guardar viaje'}</span>
               </span>
             )}
           </button>
 
-          {/* BOTÓN PROCEDER AL PAGO - NUEVO */}
           <button
             onClick={handleProceedToPayment}
             disabled={isProcessingPayment || !selectedPlan}
@@ -3028,10 +2377,10 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
     );
   };
 
-  // --- RENDERIZADO PRINCIPAL ---
+  // RENDERIZADO PRINCIPAL
   return (
     <div className="trip-generator-enhanced min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Progress Bar Mejorada */}
+      {/* Progress Bar */}
       <div className="progress-bar bg-white shadow-lg border-b-2 border-blue-100">
         <div className="max-w-7xl mx-auto p-6">
           <div className="flex items-center justify-between">
@@ -3083,7 +2432,7 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
           {currentView === 'summary' && renderSummaryView()}
         </div>
 
-        {/* Navigation Mejorada */}
+        {/* Navigation */}
         <div className="navigation flex justify-between items-center mt-12 pt-8 border-t-2 border-gray-200">
           <button
             onClick={handleBack}
@@ -3109,14 +2458,14 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
             className="flex items-center space-x-3 px-12 py-4 bg-gradient-to-r from-orange-500 to-blue-600 text-white font-bold text-lg rounded-xl hover:from-orange-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             <span>
-              {currentView === 'summary' ? '¡Finalizar!' : 'Siguiente'}
+              {currentView === 'summary' ? 'Finalizar' : 'Siguiente'}
             </span>
             <ArrowRight className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Toast Notifications Mejoradas */}
+      {/* Toast Notifications */}
       <div className="toast-container fixed top-6 right-6 z-50 space-y-3">
         {toasts.map((toast) => (
           <div
@@ -3144,14 +2493,11 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
           isOpen={showOriginModal}
           onClose={() => setShowOriginModal(false)}
           onConfirm={(origin) => {
-            console.log('Origen confirmado desde modal:', origin);
             setSelectedOrigin(origin);
             setShowOriginModal(false);
             showToast(`Origen seleccionado: ${origin.city}`, 'success');
             
-            // Si todos los campos están completos, generar automáticamente
             if (destination && startDate && endDate && travelers && budget) {
-              console.log('Todos los campos completos - generando planes automáticamente');
               setTimeout(() => handleGeneratePlans(), 500);
             }
           }}
@@ -3216,3 +2562,4 @@ const TripWaseGenerator: React.FC<TripWaseGeneratorProps> = ({ onBackToExplore, 
 };
 
 export default TripWaseGenerator;
+
