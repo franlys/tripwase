@@ -321,28 +321,76 @@ const RENTAL_CARS_DATABASE: RentalCarOption[] = [
   }
 ];
 
+// Función auxiliar para remover acentos
+const removeAccents = (str: string): string => {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+};
+
 const isInternationalTrip = (origin: OriginData | null, destination: string): boolean => {
   if (!origin) return false;
   
   const COUNTRY_CITIES: Record<string, string[]> = {
-    'República Dominicana': ['santo domingo', 'santiago', 'punta cana', 'puerto plata', 'la romana', 'samana'],
-    'Estados Unidos': ['new york', 'miami', 'orlando', 'los angeles', 'las vegas', 'chicago'],
-    'España': ['madrid', 'barcelona', 'valencia', 'sevilla', 'bilbao'],
-    'Francia': ['paris', 'lyon', 'marseille', 'toulouse', 'nice'],
-    'México': ['ciudad de mexico', 'cancun', 'guadalajara', 'monterrey', 'playa del carmen'],
-    'Brasil': ['sao paulo', 'rio de janeiro', 'brasilia', 'salvador'],
-    'Colombia': ['bogota', 'medellin', 'cartagena', 'cali'],
-    'Argentina': ['buenos aires', 'cordoba', 'mendoza', 'rosario']
+    'República Dominicana': [
+      'santo domingo', 'santiago', 'punta cana', 'puerto plata', 
+      'la romana', 'samana', 'samaná', // ✅ Ambas variantes
+      'boca chica', 'juan dolio', 'bayahibe', 'cabarete', 
+      'las terrenas', 'jarabacoa', 'constanza'
+    ],
+    'Estados Unidos': [
+      'new york', 'miami', 'orlando', 'los angeles', 'las vegas', 
+      'chicago', 'washington', 'boston', 'san francisco', 'nueva york'
+    ],
+    'España': [
+      'madrid', 'barcelona', 'valencia', 'sevilla', 'bilbao',
+      'málaga', 'malaga', 'alicante', 'granada'
+    ],
+    'Francia': [
+      'paris', 'parís', 'lyon', 'marseille', 'marsella', 
+      'toulouse', 'nice', 'niza'
+    ],
+    'México': [
+      'ciudad de mexico', 'cancún', 'cancun', 'guadalajara', 
+      'monterrey', 'playa del carmen', 'tulum', 'cdmx'
+    ],
+    'Brasil': [
+      'sao paulo', 'são paulo', 'rio de janeiro', 'río de janeiro',
+      'brasilia', 'salvador', 'recife', 'fortaleza'
+    ],
+    'Colombia': [
+      'bogotá', 'bogota', 'medellín', 'medellin', 
+      'cartagena', 'cali', 'barranquilla'
+    ],
+    'Argentina': [
+      'buenos aires', 'córdoba', 'cordoba', 'mendoza', 
+      'rosario', 'salta', 'bariloche'
+    ]
   };
 
   const originCountry = origin.country;
-  const destinationLower = destination.toLowerCase().trim();
+  
+  // ✅ Normalizar destino (sin acentos, lowercase, trimmed)
+  const destinationNormalized = removeAccents(destination.toLowerCase().trim());
+  
   const originCities = COUNTRY_CITIES[originCountry] || [];
-  const isDomestic = originCities.some(city => destinationLower.includes(city));
+  
+  // ✅ Comparar sin acentos
+  const isDomestic = originCities.some(city => {
+    const cityNormalized = removeAccents(city.toLowerCase());
+    return destinationNormalized.includes(cityNormalized) || 
+           cityNormalized.includes(destinationNormalized);
+  });
+  
+  // Debug - puedes quitarlo después
+  console.log('🔍 Detección de viaje:', {
+    origin: originCountry,
+    destination: destination,
+    destinationNormalized,
+    isDomestic,
+    isInternational: !isDomestic
+  });
   
   return !isDomestic;
 };
-
 const getFavoriteAirline = (): string | null => {
   try {
     return localStorage.getItem('tripwase_favorite_airline');
